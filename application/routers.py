@@ -2,17 +2,16 @@
 
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
-from bs4 import BeautifulSoup
 
+from bs4 import BeautifulSoup
 from fastapi import APIRouter, Depends, HTTPException, status
 from jose import jwt
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 import crud
-import requests
-import json
-
+from apis.request import request_get
 from config.config import get_async_session
 from config.environment import jwt_settings
 from models.customer import Customer
@@ -22,8 +21,26 @@ from schemas.customer import (
     LoginCustomerModel,
     LoginCustomerRespones,
 )
+from urls import Url
 
 router = APIRouter()
+
+
+class NovelResponse(BaseModel):
+    """小説本文データ.
+
+    Parameters:
+    ----------
+    title : 小説のタイトル
+    text : 本文
+    next : 次ページ有無
+    prev : 前ページ有無
+    """
+
+    title: str = None
+    text: str = None
+    next: bool = False
+    prev: bool = False
 
 
 @router.post(
@@ -86,41 +103,39 @@ async def read_items(
     return {"customer_name": current_customer.name}
 
 
-@router.get("/api/maintext")
-def scraping(
-    *,
-    ncode:str,
-    episode:int
-):
-    
-    # なろう小説API
-    base_url = "http://api.syosetu.com/novelapi/api/"
-
+@router.get(
+    "/api/maintext",
+    response_model=NovelResponse,
+)
+def get_novel(*, ncode: str, episode: int):
+    """小説取得API."""
     # t-w-n-k-g：小説名、作者名、Nコード、キーワード、全話数を出力
     # json形式で出力
-    payload = {'of': 't-w-n-k-g', 'ncode': ncode, 'keyword': '1', 'out':'json'}
-    response =  requests.get(base_url, payload).json()
-    # print(response)
-
-    all_episode = response[1]['genre']
-    title = response[1]['title']
+    payload = {"of": "t-w-n-k-g", "keyword": "1", "out": "json"}
+    response = request_get(payload=payload, url=Url.API_URL.value, headers=None)
+    novel_data = response.json()
+    all_episode = novel_data[1]["genre"]
+    title = novel_data[1]["title"]
 
     # 前話・次話判定
-    next_episode:bool = False
-    prev_episode:bool = False
-    if not episode == all_episode:
-        next_episode = True
-    if episode > 1:
-        prev_episode = True
+    next_episode: bool = not episode == all_episode
+    prev_episode: bool = episode > 1
 
     # なろう小説URL
-    target_url = f"https://ncode.syosetu.com/{ncode}/{episode}/"
+    novel_url = f"{Url.NOVEL_URL.value}{ncode}/{episode}/"
 
-    # User-Agentを変更
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}
+    # User-Agentを設定
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/97.0.4692.71 Safari/537.36"
+        )
+    }
 
-    r = requests.get(target_url,headers=headers)
-    soup = BeautifulSoup(r.text,'html.parser')
+    novel_response = request_get(url=novel_url, payload=None, headers=headers)
+
+    soup = BeautifulSoup(novel_response.text, "html.parser")
 
     # 各話タイトル @ToDo:一旦不要
     # subtitle = soup.select_one('p', class_ = 'novel_subtitle').text
@@ -130,16 +145,13 @@ def scraping(
     honbun = soup.select_one("#novel_honbun").text
     honbun += "\n"
 
-    # テキストをJSONにまとめる
-    result_json = {
-        "title":title,
-        "text": honbun,
-        "next":next_episode,
-        "prev":prev_episode,
-        }
-    
     # JSONを表示
-    print(json.dumps(result_json, indent=2, ensure_ascii=False))
-        
-    return result_json
+    print(
+        NovelResponse(
+            title=title, text=honbun, next=next_episode, prev=prev_episode
+        )
+    )
 
+    return NovelResponse(
+        title=title, text=honbun, next=next_episode, prev=prev_episode
+    )
