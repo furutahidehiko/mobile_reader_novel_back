@@ -6,7 +6,6 @@ from typing import Annotated, Optional
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, Depends, HTTPException, status
 from jose import jwt
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -15,6 +14,7 @@ from apis.request import request_get
 from config.config import get_async_session
 from config.environment import jwt_settings
 from models.customer import Customer
+from models.novel import NovelResponse
 from schemas.customer import (
     CustomerModel,
     CustomerResponse,
@@ -24,23 +24,6 @@ from schemas.customer import (
 from urls import Url
 
 router = APIRouter()
-
-
-class NovelResponse(BaseModel):
-    """小説本文データ.
-
-    Parameters:
-    ----------
-    title : 小説のタイトル
-    text : 本文
-    next : 次ページ有無
-    prev : 前ページ有無
-    """
-
-    title: str = None
-    text: str = None
-    next: bool = False
-    prev: bool = False
 
 
 @router.post(
@@ -109,20 +92,43 @@ async def read_items(
 )
 def get_novel(*, ncode: str, episode: int):
     """小説取得API."""
-    # t-w-n-k-g：小説名、作者名、Nコード、キーワード、全話数を出力
+    # t-ga：小説名、全話数を出力
+    # lim: 取得数をlimit(1)の数に制限
     # json形式で出力
-    payload = {"of": "t-w-n-k-g", "keyword": "1", "out": "json"}
-    response = request_get(payload=payload, url=Url.API_URL.value, headers=None)
-    novel_data = response.json()
-    all_episode = novel_data[1]["genre"]
-    title = novel_data[1]["title"]
+    limit = 1
+    payload = {
+        "of": "t-ga",
+        "ncode": {ncode},
+        "lim": limit,
+        "out": "json",
+    }
+    response = request_get(Url.API_URL.value, None, payload)
+
+    all_count = response.json()[0]  # all_count(検索ヒット数)
+    novel_data = response.json()[
+        1
+    ]  # novel_data(全話数(general_all_no),小説タイトル(title))
+
+    # 不正なnコードかどうかのチェック・存在しないエピソードかどうかのチェック
+    # all_count(検索ヒット数)とlimit数が一致していない場合はエラーを返す
+    # フロントから渡された話数と全話数が一致していない場合はエラーを返す
+    print(all_count["allcount"])
+    print(novel_data["general_all_no"])
+    if (
+        not all_count["allcount"] == limit
+        or episode > novel_data["general_all_no"]
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nコードか話数が存在しません",
+        )
 
     # 前話・次話判定
-    next_episode: bool = not episode == all_episode
+    next_episode: bool = not episode == novel_data["general_all_no"]
     prev_episode: bool = episode > 1
 
     # なろう小説URL
-    novel_url = f"{Url.NOVEL_URL.value}{ncode}/{episode}/"
+    novel_url = Url.NOVEL_URL.join(ncode, str(episode))
 
     # User-Agentを設定
     headers = {
@@ -133,25 +139,28 @@ def get_novel(*, ncode: str, episode: int):
         )
     }
 
-    novel_response = request_get(url=novel_url, payload=None, headers=headers)
-
+    novel_response = request_get(novel_url, headers, payload)
     soup = BeautifulSoup(novel_response.text, "html.parser")
 
-    # 各話タイトル @ToDo:一旦不要
-    # subtitle = soup.select_one('p', class_ = 'novel_subtitle').text
-    # print(subtitle)
+    # 各話タイトル
+    subtitle = soup.select_one("p", class_="novel_subtitle").text
+    print(subtitle)
 
     # 本文
     honbun = soup.select_one("#novel_honbun").text
+    print(honbun)
     honbun += "\n"
+    # 空白行も含めてリストにする
+    result_list = honbun.split("\n")
 
-    # JSONを表示
-    print(
-        NovelResponse(
-            title=title, text=honbun, next=next_episode, prev=prev_episode
-        )
+    # @Todo 既読更新処理(DB連携)
+
+    novel = NovelResponse(
+        title=novel_data["title"],
+        subtitle=subtitle,
+        text=result_list,
+        next=next_episode,
+        prev=prev_episode,
     )
 
-    return NovelResponse(
-        title=title, text=honbun, next=next_episode, prev=prev_episode
-    )
+    return novel

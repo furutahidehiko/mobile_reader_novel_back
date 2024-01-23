@@ -3,10 +3,9 @@ import requests
 
 
 def request_get(
-    *,
-    url=None,
-    headers=None,
-    payload=None,
+    url,
+    headers,
+    payload,
 ):
     """Get通信した結果のレスポンスを返す.
 
