@@ -32,5 +32,5 @@ class Url(Enum):
         base_url = self.value
         for url in path_segments:
             base_url = f"{urljoin(base_url, url)}/"
-            print(base_url)
+            # print(base_url)
         return base_url

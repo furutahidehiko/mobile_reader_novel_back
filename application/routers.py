@@ -112,8 +112,8 @@ def get_novel(*, ncode: str, episode: int):
     # 不正なnコードかどうかのチェック・存在しないエピソードかどうかのチェック
     # all_count(検索ヒット数)とlimit数が一致していない場合はエラーを返す
     # フロントから渡された話数と全話数が一致していない場合はエラーを返す
-    print(all_count["allcount"])
-    print(novel_data["general_all_no"])
+    # print(all_count["allcount"])
+    # print(novel_data["general_all_no"])
     if (
         not all_count["allcount"] == limit
         or episode > novel_data["general_all_no"]
@@ -143,8 +143,8 @@ def get_novel(*, ncode: str, episode: int):
     soup = BeautifulSoup(novel_response.text, "html.parser")
 
     # 各話タイトル
-    subtitle = soup.select_one("p", class_="novel_subtitle").text
-    print(subtitle)
+    subtitle = soup.select_one("p.novel_subtitle").text
+    print(soup.select_one("p", class_="novel_subtitle").text)
 
     # 本文
     honbun = soup.select_one("#novel_honbun").text
