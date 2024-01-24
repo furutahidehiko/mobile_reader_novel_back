@@ -4,8 +4,8 @@ import requests
 
 def request_get(
     url,
-    headers,
-    payload,
+    headers = None,
+    payload = None,
 ):
     """Get通信した結果のレスポンスを返す.
 

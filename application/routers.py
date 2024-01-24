@@ -102,7 +102,7 @@ def get_novel(*, ncode: str, episode: int):
         "lim": limit,
         "out": "json",
     }
-    response = request_get(Url.API_URL.value, None, payload)
+    response = request_get(Url.API_URL.value, payload=payload)
 
     all_count = response.json()[0]  # all_count(検索ヒット数)
     novel_data = response.json()[
@@ -133,8 +133,8 @@ def get_novel(*, ncode: str, episode: int):
     # User-Agentを設定
     headers = {
         "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            "AppleWebKit/537.36 (KHTML, like Gecko)"
             "Chrome/97.0.4692.71 Safari/537.36"
         )
     }
@@ -148,13 +148,11 @@ def get_novel(*, ncode: str, episode: int):
 
     # 本文
     honbun = soup.select_one("#novel_honbun").text
-    print(honbun)
     honbun += "\n"
     # 空白行も含めてリストにする
     result_list = honbun.split("\n")
 
     # @Todo 既読更新処理(DB連携)
-
     novel = NovelResponse(
         title=novel_data["title"],
         subtitle=subtitle,
