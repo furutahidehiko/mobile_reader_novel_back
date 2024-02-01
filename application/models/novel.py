@@ -18,6 +18,6 @@ class NovelResponse(BaseModel):
 
     title: str = Field(..., title="小説のタイトル")
     subtitle: str = Field(..., title="エピソードタイトル")
-    text: List[str] = Field(..., title="本文")
-    next: bool = Field(False, title="次ページ有無")
-    prev: bool = Field(False, title="前ページ有無")
+    text: List[str] = Field(..., title="本文", example="なろう小説です")
+    next: bool = Field(False, title="次ページ有無", example="boolean")
+    prev: bool = Field(False, title="前ページ有無", example="boolean")

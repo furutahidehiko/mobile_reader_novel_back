@@ -3,12 +3,12 @@ from bs4 import BeautifulSoup
 from fastapi import HTTPException, status
 
 from apis.request import request_get
-from domain.narou.narou_urls import Url
+from domain.narou.narou_data import NarouData
 from models.novel import NovelResponse
-from services.json_wrapper import NarouData
+from urls import Url
 
 
-def narou_novel(ncode: str, episode: int):
+def get_main_text(ncode: str, episode: int):
     """小説取得API."""
     # t-ga：小説名、全話数を出力
     payload = {
@@ -20,20 +20,20 @@ def narou_novel(ncode: str, episode: int):
     response = request_get(Url.API_URL.value, payload=payload)
     json_data = NarouData(response)
 
-    count = json_data.count.allcount
+    all_count = json_data.count.allcount
     novel_data = json_data.novel_data
 
     # 不正なnコードかどうかのチェック・存在しないエピソードかどうかのチェック
     # all_count(検索ヒット数)とlimit数が一致していない場合はエラーを返す
     # フロントから渡された話数と全話数が一致していない場合はエラーを返す
-    if not count == 1 or episode > novel_data.general_all_no:
+    if not all_count == 1 or episode > novel_data.general_all_no:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Nコードか話数が存在しません",
         )
 
-    next_episode: bool = not episode == novel_data.general_all_no
-    prev_episode: bool = episode > 1
+    next_episode = not episode == novel_data.general_all_no
+    prev_episode = episode > 1
 
     novel_url = Url.NOVEL_URL.join(ncode, str(episode))
     headers = {
