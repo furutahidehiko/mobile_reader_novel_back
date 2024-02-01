@@ -53,7 +53,7 @@ def get_main_text(ncode: str, episode: int):
     honbun += "\n"
     result_list = honbun.split("\n")
 
-    # ToDo: 既読更新処理(DB連携)
+    # TODO: 既読更新処理(DB連携)
 
     novel = NovelResponse(
         title=novel_data.title,
