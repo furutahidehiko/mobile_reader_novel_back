@@ -17,6 +17,7 @@ class Base(AsyncAttrs, DeclarativeBase):
         primary_key=True,
         default=lambda: ulid.new().str,
         comment="ID",
+        nullable=False,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
