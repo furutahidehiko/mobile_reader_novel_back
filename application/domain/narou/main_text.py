@@ -61,7 +61,6 @@ async def get_main_text(
     honbun += "\n"
     result_list = honbun.split("\n")
 
-    # TODO: 既読更新処理(DB連携)
     result = await async_session.execute(
         select(ReadHistory).where(ReadHistory.ncode == ncode)
     )
