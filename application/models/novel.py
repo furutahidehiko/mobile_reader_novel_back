@@ -44,10 +44,34 @@ class NovelResponse(BaseModel):
         }
 
 class Chapter(BaseModel):
+    """目次情報.
+
+    Parameters:
+    ----------
+    chapter_title : 章題
+    sub_titles : 小説のサブタイトル
+    """
     chapter_title: str = Field(..., title="章題")
     sub_titles: List[str] = Field(..., title="小説のサブタイトル")
 
 class NovelInfoResponse(BaseModel):
+    """小説情報.
+
+    Parameters:
+    ----------
+    title : 小説名
+    author : 作者名
+    episode_count : 全話数
+    release_date : 公開日
+    tag : 小説のタグ
+    summary : あらすじ
+    category : 大ジャンル
+    sub_category : ジャンル
+    updated_at : 作品の最終更新日
+    read_episode : 既読した話数
+    chapters : 章
+    is_follow : お気に入り登録してるかどうか
+    """
     title: str = Field(..., title="小説名")
     author: str = Field(..., title="作者名")
     episode_count: int = Field(..., title="全話数")
