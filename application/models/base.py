@@ -12,18 +12,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 class Base(AsyncAttrs, DeclarativeBase):
     """宣言的マッピングの基底クラス."""
 
-    id: Mapped[str] = mapped_column(
-        String(26),
-        primary_key=True,
-        default=lambda: ulid.new().str,
-        comment="ID",
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, comment="ID")
 
 
 class PasswordMixin:

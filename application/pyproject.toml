@@ -18,6 +18,7 @@ python-multipart = "^0.0.6"
 python-jose = { version = "^3.3.0", extras = ["cryptography"] }
 beautifulsoup4 = "^4.12.3"
 requests = "^2.31.0"
+fake-useragent = "^1.4.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
