@@ -1,8 +1,8 @@
 """小説取得API."""
 from bs4 import BeautifulSoup
 from fastapi import Depends, HTTPException, status
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
 from apis.request import request_get
 from config.config import get_async_session
@@ -61,26 +61,29 @@ async def get_main_text(
     honbun += "\n"
     result_list = honbun.split("\n")
 
-    result = await async_session.execute(
-        select(ReadHistory).where(ReadHistory.ncode == ncode)
-    )
-    history = result.scalar_one_or_none()
-
-    # レコードがある場合は更新、無い場合は作成する
-    if history is None:
-        read_history = ReadHistory(ncode=ncode, read_episode=episode)
-        async_session.add(read_history)
-        await async_session.commit()
-    else:
-        history.read_episode = episode
+    try:
+        # レコードがある場合は更新、無い場合は作成する
+        stmt = insert(ReadHistory).values(ncode=ncode, read_episode=episode)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["ncode"],
+            set_={"read_episode": stmt.excluded.read_episode},
+        )
+        await async_session.execute(stmt)
         await async_session.commit()
 
-    novel = NovelResponse(
-        title=novel_data.title,
-        subtitle=subtitle,
-        text=result_list,
-        next=next_episode,
-        prev=prev_episode,
-    )
+        novel = NovelResponse(
+            title=novel_data.title,
+            subtitle=subtitle,
+            text=result_list,
+            next=next_episode,
+            prev=prev_episode,
+        )
 
-    return novel
+        return novel
+
+    except Exception:
+        # トランザクション内でのエラー処理
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="サーバーエラーが発生しました。",
+        )
