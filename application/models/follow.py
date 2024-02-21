@@ -10,4 +10,4 @@ class Follow(Base):
     __tablename__ = "follow"
 
     read_history_id = Column(Integer, ForeignKey('read_history.id'), nullable=False)
-    follow = Column(Boolean, default=False, nullable=False)
+    is_follow = Column(Boolean, default=False, nullable=False)

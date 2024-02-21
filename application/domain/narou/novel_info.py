@@ -107,7 +107,7 @@ async def get_follow_status_by_ncode(db: AsyncSession, ncode: str) -> bool:
         return False  # ReadHistoryに該当するレコードがない場合、Falseを返す
 
     # 取得したIDを基にFollowテーブルからfollowステータスを取得
-    query_follow_status = select(Follow.follow).filter(Follow.read_history_id == read_history_id)
+    query_follow_status = select(Follow.is_follow).filter(Follow.read_history_id == read_history_id)
     result_follow_status = await db.execute(query_follow_status)
     follow_status = result_follow_status.scalars().first()
 

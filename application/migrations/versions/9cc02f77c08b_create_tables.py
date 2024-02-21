@@ -1,8 +1,8 @@
 """create tables
 
-Revision ID: 8d612f28485d
+Revision ID: 9cc02f77c08b
 Revises: 
-Create Date: 2024-02-20 15:52:43.963028
+Create Date: 2024-02-21 09:45:59.780995
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8d612f28485d'
+revision: str = '9cc02f77c08b'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -40,7 +40,7 @@ def upgrade() -> None:
     )
     op.create_table('follow',
     sa.Column('read_history_id', sa.Integer(), nullable=False),
-    sa.Column('follow', sa.Boolean(), nullable=False),
+    sa.Column('is_follow', sa.Boolean(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False, comment='ID'),
     sa.ForeignKeyConstraint(['read_history_id'], ['read_history.id'], ),
     sa.PrimaryKeyConstraint('id')
