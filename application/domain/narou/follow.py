@@ -27,7 +27,7 @@ async def post_follow(db: AsyncSession, ncode: str):
 
     if not read_history:
         # ReadHistoryに対応するエントリがなければエラー
-        raise HTTPException(status_code=404, detail="ReadHistory not found")
+        raise HTTPException(status_code=404, detail="ReadHistoryが見つかりません")
 
     # Followテーブルで対応するエントリを検索
     query_follow = select(Follow).filter(Follow.read_history_id == read_history.id)
@@ -36,10 +36,10 @@ async def post_follow(db: AsyncSession, ncode: str):
 
     if follow:
         # Followエントリが既に存在する場合、followをTrueに更新
-        follow.follow = True
+        follow.is_follow = True
     else:
         # Followエントリが存在しない場合、新しく作成してfollowをTrueに設定
-        follow = Follow(read_history_id=read_history.id, follow=True)
+        follow = Follow(read_history_id=read_history.id, is_follow=True)
         db.add(follow)
 
     await db.commit()  # 変更をコミット
@@ -65,10 +65,10 @@ async def delete_follow(db: AsyncSession, ncode: str):
 
     if not read_history_id:
         # ReadHistoryに対応するエントリがなければエラー
-        raise HTTPException(status_code=404, detail="ReadHistory not found")
+        raise HTTPException(status_code=404, detail="ReadHistoryが見つかりません")
 
     # Followテーブルで対応するエントリを検索し、削除する
-    query_delete_follow = delete(Follow).where(Follow.read_history_id == read_history_id).where(Follow.follow == True)
+    query_delete_follow = delete(Follow).where(Follow.read_history_id == read_history_id).where(Follow.is_follow == True)
     result = await db.execute(query_delete_follow)
     
     # 削除が実行されたか確認
@@ -78,4 +78,4 @@ async def delete_follow(db: AsyncSession, ncode: str):
         return FollowResponse(is_success=True)
     else:
         # 削除対象がなかった場合
-        raise HTTPException(status_code=404, detail="Follow entry not found or already unfollowed")
+        raise HTTPException(status_code=404, detail="削除対象が見つかりません")
