@@ -35,9 +35,9 @@ make down
 ```
 
 #### マイグレーションファイルを作成する
-※ -m 以下の文言は自由です
+※マイグレーションはbuild時に自動的に実施します。
 ```
-poetry run alembic revision --autogenerate -m "create tables"
+poetry run alembic revision --autogenerate
 ```
 
 #### マイグレーションを実行する
