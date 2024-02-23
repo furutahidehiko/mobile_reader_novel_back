@@ -37,3 +37,6 @@ mypy:
 
 migration:
 	$(POETRY_RUN) alembic revision --autogenerate
+
+upgrade:
+	$(POETRY_RUN) alembic upgrade head
