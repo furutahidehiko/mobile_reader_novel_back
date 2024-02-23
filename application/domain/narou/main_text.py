@@ -15,9 +15,18 @@ from urls import Url
 async def get_main_text(
     ncode: str,
     episode: int,
-    async_session: AsyncSession = Depends(get_async_session),
-):
-    """小説取得API."""
+    db: AsyncSession = Depends(get_async_session),
+) -> dict:
+    """
+    指定されたncode(小説コード)とepisode(話数)の小説本文をスクレイピングで取得する関数。
+
+    Parameters:
+    - ncode (str): スクレイピング対象の小説のNコード。
+    - episodes (int): 小説のエピソード。
+    Returns:
+    - dict: 小説のタイトル、サブタイトル、本文(リスト形式)、次話・全話有無を含む辞書。
+    """
+
     # t-ga：小説名、全話数を出力
     payload = {
         "of": "t-ga",
@@ -44,6 +53,8 @@ async def get_main_text(
     prev_episode = episode > 1
 
     novel_url = Url.NOVEL_URL.join(ncode, str(episode))
+
+    # TODO:別PRの小説情報取得APIで使用しているUser-Agentクラスを利用予定
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
@@ -61,29 +72,27 @@ async def get_main_text(
     honbun += "\n"
     result_list = honbun.split("\n")
 
-    try:
-        # レコードがある場合は更新、無い場合は作成する
-        stmt = insert(ReadHistory).values(ncode=ncode, read_episode=episode)
-        stmt = stmt.on_conflict_do_update(
-            index_elements=["ncode"],
-            set_={"read_episode": stmt.excluded.read_episode},
-        )
-        await async_session.execute(stmt)
-        await async_session.commit()
+    # レコードがあるかつread_episodeとepisodeに差異があった場合のみ更新、無い場合は作成する
+    stmt = insert(ReadHistory).values(ncode=ncode, read_episode=episode)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["ncode"],
+        set_={"read_episode": stmt.excluded.read_episode},
+        where=(ReadHistory.read_episode != stmt.excluded.read_episode),
+    )
 
-        novel = NovelResponse(
-            title=novel_data.title,
-            subtitle=subtitle,
-            text=result_list,
-            next=next_episode,
-            prev=prev_episode,
-        )
+    result = await db.execute(stmt)
 
-        return novel
+    # 条件にヒットしない場合の実行をスキップ
+    if result.rowcount > 0:
+        await db.commit()
 
-    except Exception:
-        # トランザクション内でのエラー処理
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="サーバーエラーが発生しました。",
-        )
+    novel = NovelResponse(
+        title=novel_data.title,
+        subtitle=subtitle,
+        text=result_list,
+        next=next_episode,
+        prev=prev_episode,
+    )
+
+
+    return novel
