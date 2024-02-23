@@ -1,8 +1,7 @@
 # fast_api_practice
 
 ## 1. APIの種類
-- 本文情報を取得するAPI
-- 目次情報を取得するAPI
+- https://github.com/watame/mobile_web_novel_reader
 
 ## 2. 開発環境構築
 
