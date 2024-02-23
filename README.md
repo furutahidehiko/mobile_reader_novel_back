@@ -1,7 +1,7 @@
 # fast_api_practice
 
 ## 1. APIの種類
-- https://github.com/watame/mobile_web_novel_reader
+- [なろう仕様書リポジトリ](https://github.com/watame/mobile_web_novel_reader)
 
 ## 2. 開発環境構築
 
