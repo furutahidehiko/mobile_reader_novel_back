@@ -1,17 +1,14 @@
 import requests
 
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from domain.narou.common import Genre,UserAgentManager
 from models.follow import Follow
 from models.novel import NovelInfoResponse
 from models.read_history import ReadHistory
-
-# ユーザーエージェントをランダムに生成するためのオブジェクト
-ua = UserAgent()
 
 def scrape_narou_chapters(ncode: str, total_episodes: int) -> list:
     """
@@ -35,7 +32,8 @@ def scrape_narou_chapters(ncode: str, total_episodes: int) -> list:
     sub_titles = []
 
     # ユーザーエージェントを設定
-    headers = {'User-Agent': ua.random}  
+    ua_manager = UserAgentManager()
+    headers = ua_manager.get_random_user_headers()
 
     # 指定されたページ数だけループして目次情報を取得
     for page in range(1, page_count + 1):
@@ -126,38 +124,7 @@ async def get_novel_info(db: AsyncSession, ncode: str):
     """
     # narouAPIのエンドポイントURL
     endpoint = f"https://api.syosetu.com/novelapi/api/?ncode={ncode}&out=json"
-    big_genre_dict = {
-		1: "恋愛", 2: "ファンタジー", 3: "文芸", 4: "SF", 99: "その他", 98: "ノンジャンル",
-	}
-    genre_dict = {
-				1: "恋愛",
-				2: "ファンタジー",
-				3: "文芸",
-				4: "SF",
-				99: "その他",
-				98: "ノンジャンル",
-				101: "異世界〔恋愛〕",
-				102: "現実世界〔恋愛〕",
-				201: "ハイファンタジー〔ファンタジー〕",
-				202: "ローファンタジー〔ファンタジー〕",
-				301: "純文学〔文芸〕",
-				302: "ヒューマンドラマ〔文芸〕",
-				303: "歴史〔文芸〕",
-				304: "推理〔文芸〕",
-				305: "ホラー〔文芸〕",
-				306: "アクション〔文芸〕",
-				307: "コメディー〔文芸〕",
-				401: "VRゲーム〔SF〕",
-				402: "宇宙〔SF〕",
-				403: "空想科学〔SF〕",
-				404: "パニック〔SF〕",
-				9901: "童話〔その他〕",
-				9902: "詩〔その他〕",
-				9903: "エッセイ〔その他〕",
-				9904: "リプレイ〔その他〕",
-				9999: "その他〔その他〕",
-				9801: "ノンジャンル〔ノンジャンル〕",
-			}
+    
     
     # APIからデータを取得
     response = requests.get(endpoint)
@@ -176,8 +143,8 @@ async def get_novel_info(db: AsyncSession, ncode: str):
         "release_date": data.get("general_firstup"),
         "tag": data.get("keyword").split(" "),
         "summary": data.get("story"),
-        "category": big_genre_dict[data.get("biggenre")],
-        "sub_category": genre_dict[data.get("genre")],
+        "category": Genre.get_big_genre(data.get("biggenre")),
+        "sub_category": Genre.get_genre(data.get("genre")),
         "updated_at": data.get("general_lastup"),
         "read_episode": read_episode, 
         "chapters": scrape_narou_chapters(ncode,data.get("general_all_no")),
