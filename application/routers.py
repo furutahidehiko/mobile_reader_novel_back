@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.config import get_async_session
 from domain.narou.main_text import get_main_text
+from schemas.novel import NovelResponse
 
 router = APIRouter()
 
