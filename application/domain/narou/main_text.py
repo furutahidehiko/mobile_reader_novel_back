@@ -82,7 +82,6 @@ async def get_main_text(
 
     await db.execute(stmt)
 
-    # 条件にヒットしない場合の実行をスキップ
     await db.commit()
         
 
