@@ -80,11 +80,11 @@ async def get_main_text(
         where=(ReadHistory.read_episode != stmt.excluded.read_episode),
     )
 
-    result = await db.execute(stmt)
+    await db.execute(stmt)
 
     # 条件にヒットしない場合の実行をスキップ
-    if result.rowcount > 0:
-        await db.commit()
+    await db.commit()
+        
 
     novel = NovelResponse(
         title=novel_data.title,
