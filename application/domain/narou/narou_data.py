@@ -21,6 +21,9 @@ class NarouData:
     """なろうの小説APIで取得したデータ."""
 
     def __init__(self, data):
+
+        self.novel_data = None
+
         """なろうの小説APIで取得したデータを整形."""
 
         def get_condition(item, dataclass_name):

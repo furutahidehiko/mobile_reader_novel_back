@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apis.request import request_get
 from config.config import get_async_session
 from domain.narou.narou_data import NarouData
-from models.novel import NovelResponse
+from schemas.novel import NovelResponse
 from models.readhistory import ReadHistory
 from urls import Url
 
@@ -40,6 +40,12 @@ async def get_main_text(
     all_count = json_data.count.allcount
     novel_data = json_data.novel_data
 
+    if novel_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nコードか話数が存在しません",
+        )
+
     # 不正なnコードかどうかのチェック・存在しないエピソードかどうかのチェック
     # all_count(検索ヒット数)とlimit数が一致していない場合はエラーを返す
     # フロントから渡された話数と全話数が一致していない場合はエラーを返す
@@ -66,7 +72,7 @@ async def get_main_text(
     novel_response = request_get(novel_url, headers, payload)
     soup = BeautifulSoup(novel_response.text, "html.parser")
 
-    subtitle = soup.select_one("p.novel_subtitle").text
+    sub_title = soup.select_one("p.novel_subtitle").text
 
     honbun = soup.select_one("#novel_honbun").text
     honbun += "\n"
@@ -87,8 +93,8 @@ async def get_main_text(
 
     novel = NovelResponse(
         title=novel_data.title,
-        subtitle=subtitle,
-        text=result_list,
+        sub_title=sub_title,
+        main_text=result_list,
         next=next_episode,
         prev=prev_episode,
     )
