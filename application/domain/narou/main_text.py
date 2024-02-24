@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apis.request import request_get
 from config.config import get_async_session
 from domain.narou.narou_data import NarouData
-from models.novel import NovelResponse
+from application.schemas.novel import NovelResponse
 from models.readhistory import ReadHistory
 from urls import Url
 
