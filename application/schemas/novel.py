@@ -10,25 +10,25 @@ class NovelResponse(BaseModel):
     Parameters:
     ----------
     title : 小説のタイトル
-    subtitle : エピソードタイトル
-    text : 本文
+    sub_title : エピソードタイトル
+    main_text : 本文
     next : 次ページ有無
     prev : 前ページ有無.
     """
 
     title: str = Field(..., title="小説のタイトル")
-    subtitle: str = Field(..., title="エピソードタイトル")
-    text: List[str] = Field(..., title="本文")
-    next: bool = Field(False, title="次ページ有無")
+    sub_title: str = Field(..., title="エピソードタイトル")
+    main_text: List[str] = Field(..., title="本文")
     prev: bool = Field(False, title="前ページ有無")
+    next: bool = Field(False, title="次ページ有無")
 
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "examples": [
                 {
                     "title": "異世界に行ったので手に職を持って生き延びます",
-                    "subtitle": "１．真っ白い世界で",
-                    "text": [
+                    "sub_title": "１．真っ白い世界で",
+                    "main_text": [
                         "",
                         "",
                         "",
@@ -42,6 +42,7 @@ class NovelResponse(BaseModel):
                 }
             ]
         }
+    }
 
 class Chapter(BaseModel):
     """目次情報.
