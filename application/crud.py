@@ -1,63 +1,47 @@
-"""CRUDのUtils."""
-
-from fastapi import Depends, HTTPException, status
-from fastapi.security import APIKeyHeader
-from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.sql import func
 
-from config.config import get_async_session
-from config.environment import jwt_settings
-from models.customer import Customer
-from schemas.customer import CustomerModel
-
-api_key_scheme = APIKeyHeader(name="Authorization")
+from models.book import Book
+from models.read_history import ReadHistory
+from models.follow import Follow
 
 
-async def get_current_customer(
-    api_key: str = Depends(api_key_scheme),
-    async_session: AsyncSession = Depends(get_async_session),
-):
-    """ログインしている顧客を取得."""
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    header = api_key.split()
-    if len(header) != 2:
-        raise credentials_exception
-    prefix, token = header
-    if prefix.lower() != "bearer":
-        raise credentials_exception
-    try:
-        payload = jwt.decode(
-            token,
-            jwt_settings.JWT_SECRET_KEY,
-            algorithms=jwt_settings.JWT_ALGORITHM,
-        )
-        customer_id = payload.get("sub")
-        if customer_id is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
+async def get_read_episode_by_ncode(db: AsyncSession, ncode: str) -> int:
+    """
+    指定されたncodeに基づいてread_episodeの値を非同期で取得する関数。
+    """
+    # Bookテーブルからncodeに基づくbook_idを取得
+    book_query = select(Book.id).where(Book.ncode == ncode)
+    book_result = await db.execute(book_query)
+    book_id = book_result.scalars().first()
 
-    result = await async_session.execute(
-        select(Customer).where(Customer.id == customer_id)
-    )
-    customer = result.scalar_one_or_none()
-    if customer is None:
-        raise credentials_exception
-    return customer
+    if book_id is None:
+        return 0  # Bookに該当するレコードがない場合、0を返す
+
+    # ReadHistoryからbook_idに基づくread_episodeの最大値を取得
+    query = select(func.max(ReadHistory.read_episode)).filter(ReadHistory.book_id == book_id)
+    result = await db.execute(query)
+    max_read_episode = result.scalars().first()
+
+    return max_read_episode if max_read_episode is not None else 0
 
 
-async def create_customer(
-    async_session: AsyncSession, customer_model: CustomerModel
-) -> Customer:
-    """顧客を生成."""
-    customer = Customer(name=customer_model.name)
-    customer.set_password(customer_model.password)
-    async_session.add(customer)
-    await async_session.commit()
-    await async_session.refresh(customer)
-    return customer
+async def get_follow_status_by_ncode(db: AsyncSession, ncode: str) -> bool:
+    """
+    指定されたncodeに基づいてfollowの値を非同期で取得する関数。
+    """
+    # Bookテーブルからncodeに基づくbook_idを取得
+    book_query = select(Book.id).where(Book.ncode == ncode)
+    book_result = await db.execute(book_query)
+    book_id = book_result.scalars().first()
+
+    if book_id is None:
+        return False  # Bookに該当するレコードがない場合、Falseを返す
+
+    # Followテーブルからbook_idに基づくis_followステータスを取得
+    query_follow_status = select(Follow.is_follow).filter(Follow.book_id == book_id)
+    result_follow_status = await db.execute(query_follow_status)
+    follow_status = result_follow_status.scalars().first()
+
+    return follow_status if follow_status is not None else False

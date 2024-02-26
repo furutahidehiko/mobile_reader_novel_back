@@ -1,14 +1,16 @@
-import requests
-
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from config.database import get_read_episode_by_ncode,get_follow_status_by_ncode
-from domain.narou.common import Genre,UserAgentManager
+from apis.request import request_get
+from apis.urls import Url
+from apis.user_agent import UserAgentManager
+from crud import get_read_episode_by_ncode,get_follow_status_by_ncode
+from domain.narou.common import BigGenre,Genre
+from domain.narou.narou_data import NarouData
 from models.follow import Follow
-from models.novel import NovelInfoResponse
+from schemas.novel import NovelInfoResponse
 
 
 def scrape_narou_chapters(ncode: str, total_episodes: int) -> list:
@@ -39,8 +41,9 @@ def scrape_narou_chapters(ncode: str, total_episodes: int) -> list:
     # 指定されたページ数だけループして目次情報を取得
     for page in range(1, page_count + 1):
         url = f"https://ncode.syosetu.com/{ncode}/?p={page}"
-        resp = requests.get(url,headers=headers)
-        resp.raise_for_status()
+        resp = request_get(url, headers=headers)
+        if resp is None:
+            continue
 
         soup = BeautifulSoup(resp.content, 'html.parser')
         
@@ -80,13 +83,15 @@ async def get_novel_info(db: AsyncSession, ncode: str):
     Returns:
     - NovelInfoResponse: 取得した小説情報を含むレスポンスモデルのインスタンス。
     """
-    # narouAPIのエンドポイントURL
-    endpoint = f"https://api.syosetu.com/novelapi/api/?ncode={ncode}&out=json"
-    
-    
-    # APIからデータを取得
-    response = requests.get(endpoint)
-    data = response.json()[1]  # 最初の要素はAPIのメタデータなので、小説データは[1]になる
+    # t-ga：小説名、全話数を出力
+    payload = {
+        "of": "t-ga-w-gf-k-s-bg-g-gl",
+        "ncode": {ncode},
+        "lim": 1,
+        "out": "json",
+    }
+    response = request_get(Url.API_URL.value, payload=payload)
+    data = NarouData(response)
 
     # 非同期データベースクエリを実行してread_episodeを取得
     read_episode = await get_read_episode_by_ncode(db, ncode)
@@ -95,19 +100,19 @@ async def get_novel_info(db: AsyncSession, ncode: str):
     
     # APIレスポンスから小説データを抽出
     novel_data = {
-        "title": data.get("title"),
-        "author": data.get("writer"),
-        "episode_count": data.get("general_all_no"),
-        "release_date": data.get("general_firstup"),
-        "tag": data.get("keyword").split(" "),
-        "summary": data.get("story"),
-        "category": Genre.get_big_genre(data.get("biggenre")),
-        "sub_category": Genre.get_genre(data.get("genre")),
-        "updated_at": data.get("general_lastup"),
-        "read_episode": read_episode, 
-        "chapters": scrape_narou_chapters(ncode,data.get("general_all_no")),
-        "is_follow": is_follow
-    }
+    "title": data.novel_data.title,  # 小説のタイトル
+    "author": data.novel_data.writer,  # 作者名
+    "episode_count": data.novel_data.general_all_no,  # 総エピソード数
+    "release_date": data.novel_data.general_firstup,  # 初回公開日
+    "tag": data.novel_data.keyword.split(" "),  # キーワード（タグ）を空白で分割
+    "summary": data.novel_data.story.split("\n"),  # あらすじ
+    "category": BigGenre.get_label_by_id(data.novel_data.biggenre),  # 大ジャンル
+    "sub_category": Genre.get_label_by_id(data.novel_data.genre),  # ジャンル
+    "updated_at": data.novel_data.general_lastup,  # 最終更新日
+    "read_episode": read_episode,  # 既読エピソード
+    "chapters": scrape_narou_chapters(ncode, data.novel_data.general_all_no),  # 章情報をスクレイピングで取得
+    "is_follow": is_follow  # フォロー状態
+}
 
     # NovelInfoResponseモデルのインスタンスを作成して返す
     return NovelInfoResponse(**novel_data)

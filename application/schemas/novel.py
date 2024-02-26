@@ -77,7 +77,7 @@ class NovelInfoResponse(BaseModel):
     episode_count: int = Field(..., title="全話数")
     release_date: str = Field(..., title="公開日")
     tag: List[str] = Field(..., title="小説のタグ")
-    summary: str = Field(..., title="あらすじ")
+    summary: List[str] = Field(..., title="あらすじ")
     category: str = Field(..., title="大ジャンル")
     sub_category: str = Field(..., title="ジャンル")
     updated_at: str = Field(..., title="作品の最終更新日")

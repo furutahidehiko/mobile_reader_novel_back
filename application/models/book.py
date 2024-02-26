@@ -1,17 +1,13 @@
-"""BookテーブルのORM."""
-
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Column, Integer, Boolean, ForeignKey,String
+from sqlalchemy.orm import Mapped, mapped_column,relationship
 
 from models.base import Base
 
-
 class Book(Base):
-    """本テーブルのORM."""
+    """小説情報のORM."""
 
     __tablename__ = "book"
 
-    title: Mapped[str] = mapped_column(comment="本の題名")
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ncode: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, comment="小説コード")
 
-    def __str__(self):
-        """idと名前を設定."""
-        return f"Book_{self.id}:{self.title}"

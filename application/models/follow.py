@@ -9,5 +9,6 @@ class Follow(Base):
 
     __tablename__ = "follow"
 
-    read_history_id = Column(Integer, ForeignKey('read_history.id'), nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    book_id = Column(Integer, ForeignKey('book.id'), nullable=False)
     is_follow = Column(Boolean, default=False, nullable=False)

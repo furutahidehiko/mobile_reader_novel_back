@@ -1,14 +1,14 @@
-from sqlalchemy import String,Integer
+from sqlalchemy import Column,String,Integer,ForeignKey,UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from models.base import Base
-
-
 
 class ReadHistory(Base):
     """既読テーブルのORM."""
 
     __tablename__ = "read_history"
+    __table_args__ = (UniqueConstraint('book_id', 'read_episode'),)
 
-    ncode: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, comment="小説コード")
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    book_id = Column(Integer, ForeignKey('book.id'), nullable=False)
     read_episode: Mapped[int] = mapped_column(Integer, nullable=False, default=0, comment="既読した話数")
