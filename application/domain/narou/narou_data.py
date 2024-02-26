@@ -1,5 +1,6 @@
-"""Jsonデータのマッピングクラス."""
+from requests.models import Response
 from dataclasses import dataclass
+
 
 
 @dataclass
@@ -24,16 +25,17 @@ class NovelData:
 
 
 class NarouData:
-    """なろうの小説APIで取得したデータを整形するクラス。"""
+    """なろうの小説APIから取得したデータを整形するクラス。"""
 
-    def __init__(self, response):
-        self.count = None
-        self.novel_data = None
+    def __init__(self, response: Response):
+        self.count: Optional[Count] = None
+        self.novel_data: Optional[NovelData] = None
 
-        data = response.json()
-        if 'allcount' in data[0]:
-            self.count = Count(**data[0])
-        
-        for item in data[1:]:
-            self.novel_data = NovelData(**item)
-            break
+        try:
+            data: Dict[str, Any] = response.json()
+            if data[0]:
+                self.count = Count(**data[0])
+            if data[1]:
+                self.novel_data = NovelData(**data[1])
+        except (KeyError, IndexError, TypeError) as e:
+            print(f"Error processing response data: {e}")
