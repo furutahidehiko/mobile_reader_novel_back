@@ -80,7 +80,7 @@ async def get_main_text(
     book_result = await db.execute(book_query)
     book_record = book_result.scalars().first()
     if not book_record:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="指定された小説情報がありませんでした。")
 
     book_id = book_record
 
