@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-from fastapi import APIRouter, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 

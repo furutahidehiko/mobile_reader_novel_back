@@ -1,14 +1,13 @@
 """小説取得API."""
 from bs4 import BeautifulSoup
 from fastapi import Depends, HTTPException, status
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
 from apis.request import request_get
 from apis.urls import Url
 from apis.user_agent import UserAgentManager
 from config.config import get_async_session
+from crud import ensure_book_exists,insert_read_history_if_not_exists
 from domain.narou.narou_data import NarouData
 from models.book import Book
 from models.read_history import ReadHistory
@@ -75,25 +74,10 @@ async def get_main_text(
     honbun += "\n"
     result_list = honbun.split("\n")
 
-    # Bookテーブルからncodeに対応するbook_idを取得
-    book_query = select(Book.id).where(Book.ncode == ncode)
-    book_result = await db.execute(book_query)
-    book_record = book_result.scalars().first()
-    if not book_record:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="指定された小説情報がありませんでした。")
-
-    book_id = book_record
-
+    # 非同期データベースクエリを実行してbook_idを取得
+    book_id = await ensure_book_exists(db,ncode)
     # 既読していなければ、データを挿入
-    stmt = (
-    insert(ReadHistory).
-    values(book_id=book_id, read_episode=episode).
-    on_conflict_do_nothing(index_elements=['book_id', 'read_episode'])
-    )
-    
-    await db.execute(stmt)
-    await db.commit()
-        
+    await insert_read_history_if_not_exists(db, book_id, episode)
 
     novel = NovelResponse(
         title=novel_data.title,
