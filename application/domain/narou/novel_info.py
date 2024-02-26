@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 
 from apis.request import request_get
 from apis.urls import Url
