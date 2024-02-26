@@ -40,8 +40,11 @@ def scrape_narou_chapters(ncode: str, total_episodes: int) -> list:
 
     # 指定されたページ数だけループして目次情報を取得
     for page in range(1, page_count + 1):
-        url = f"https://ncode.syosetu.com/{ncode}/?p={page}"
-        resp = request_get(url, headers=headers)
+        payload = {
+        "ncode": {ncode},
+        "p": {page},
+        }
+        resp = request_get(Url.NOVEL_URL.value, headers=headers,payload=payload)
         if resp is None:
             continue
 
@@ -100,18 +103,18 @@ async def get_novel_info(db: AsyncSession, ncode: str):
     
     # APIレスポンスから小説データを抽出
     novel_data = {
-    "title": data.novel_data.title,  # 小説のタイトル
-    "author": data.novel_data.writer,  # 作者名
-    "episode_count": data.novel_data.general_all_no,  # 総エピソード数
-    "release_date": data.novel_data.general_firstup,  # 初回公開日
-    "tag": data.novel_data.keyword.split(" "),  # キーワード（タグ）を空白で分割
-    "summary": data.novel_data.story.split("\n"),  # あらすじ
-    "category": BigGenre.get_label_by_id(data.novel_data.biggenre),  # 大ジャンル
-    "sub_category": Genre.get_label_by_id(data.novel_data.genre),  # ジャンル
-    "updated_at": data.novel_data.general_lastup,  # 最終更新日
-    "read_episode": read_episode,  # 既読エピソード
-    "chapters": scrape_narou_chapters(ncode, data.novel_data.general_all_no),  # 章情報をスクレイピングで取得
-    "is_follow": is_follow  # フォロー状態
+    "title": data.novel_data.title,
+    "author": data.novel_data.writer,
+    "episode_count": data.novel_data.general_all_no, 
+    "release_date": data.novel_data.general_firstup,
+    "tag": data.novel_data.keyword.split(" "),
+    "summary": data.novel_data.story.split("\n"),
+    "category": BigGenre.get_label_by_id(data.novel_data.biggenre),
+    "sub_category": Genre.get_label_by_id(data.novel_data.genre),
+    "updated_at": data.novel_data.general_lastup,
+    "read_episode": read_episode,
+    "chapters": scrape_narou_chapters(ncode, data.novel_data.general_all_no),
+    "is_follow": is_follow
 }
 
     # NovelInfoResponseモデルのインスタンスを作成して返す
