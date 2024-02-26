@@ -33,9 +33,7 @@ class NarouData:
 
         try:
             data: Dict[str, Any] = response.json()
-            if data[0]:
-                self.count = Count(**data[0])
-            if data[1]:
-                self.novel_data = NovelData(**data[1])
+            self.count = Count(**data[0])
+            self.novel_data = NovelData(**data[1])
         except (KeyError, IndexError, TypeError) as e:
             print(f"Error processing response data: {e}")
