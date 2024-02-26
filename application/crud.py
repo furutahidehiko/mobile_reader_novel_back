@@ -59,9 +59,10 @@ async def get_read_episode_by_ncode(db: AsyncSession, ncode: str) -> int:
     return max_read_episode if max_read_episode is not None else 0
 
 
-async def get_follow_status_by_ncode(db: AsyncSession, ncode: str) -> bool:
+async def check_follow_exists_by_ncode(db: AsyncSession, ncode: str) -> bool:
     """
-    指定されたncodeに基づいてfollowの値を非同期で取得する関数。
+    指定されたncodeに基づき、Bookテーブルからbook_idを取得し、
+    そのbook_idに紐づくFollowレコードの存在有無に基づいてフォローの有無を返す関数。
     """
     # Bookテーブルからncodeに基づくbook_idを取得
     book_query = select(Book.id).where(Book.ncode == ncode)
@@ -69,11 +70,12 @@ async def get_follow_status_by_ncode(db: AsyncSession, ncode: str) -> bool:
     book_id = book_result.scalars().first()
 
     if book_id is None:
+        # book_idが取得できなければ、フォローされていないと判断
         return False
 
-    # Followテーブルからbook_idに基づくis_followステータスを取得
-    query_follow_status = select(Follow.is_follow).filter(Follow.book_id == book_id)
-    result_follow_status = await db.execute(query_follow_status)
-    follow_status = result_follow_status.scalars().first()
+    # Followテーブルからbook_idに紐づくレコードの存在チェック
+    follow_existence_query = select(Follow.id).filter(Follow.book_id == book_id)
+    follow_existence_result = await db.execute(follow_existence_query)
+    follow_exists = follow_existence_result.scalars().first() is not None
 
-    return follow_status if follow_status is not None else False
+    return follow_exists

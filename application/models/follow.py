@@ -10,4 +10,3 @@ class Follow(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     book_id = Column(Integer, ForeignKey('book.id'), nullable=False)
-    is_follow = Column(Boolean, default=False, nullable=False)
