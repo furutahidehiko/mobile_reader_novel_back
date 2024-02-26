@@ -31,10 +31,9 @@ class NarouData:
         self.novel_data = None
 
         data = response.json()
-        if len(data) > 0 and 'allcount' in data[0]:
+        if 'allcount' in data[0]:
             self.count = Count(**data[0])
         
         for item in data[1:]:
-            if 'title' in item and 'general_all_no' in item:
-                self.novel_data = NovelData(**item)
-                break
+            self.novel_data = NovelData(**item)
+            break
