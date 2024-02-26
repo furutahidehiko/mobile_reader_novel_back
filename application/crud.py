@@ -17,7 +17,7 @@ async def get_read_episode_by_ncode(db: AsyncSession, ncode: str) -> int:
     book_id = book_result.scalars().first()
 
     if book_id is None:
-        return 0  # Bookに該当するレコードがない場合、0を返す
+        return 0
 
     # ReadHistoryからbook_idに基づくread_episodeの最大値を取得
     query = select(func.max(ReadHistory.read_episode)).filter(ReadHistory.book_id == book_id)
@@ -37,7 +37,7 @@ async def get_follow_status_by_ncode(db: AsyncSession, ncode: str) -> bool:
     book_id = book_result.scalars().first()
 
     if book_id is None:
-        return False  # Bookに該当するレコードがない場合、Falseを返す
+        return False
 
     # Followテーブルからbook_idに基づくis_followステータスを取得
     query_follow_status = select(Follow.is_follow).filter(Follow.book_id == book_id)
