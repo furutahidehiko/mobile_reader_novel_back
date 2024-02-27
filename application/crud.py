@@ -11,64 +11,43 @@ async def ensure_book_exists(db: AsyncSession, ncode: str) -> int:
     """
     指定されたncodeに基づいてBookテーブルを検索し、存在しない場合は新規追加する関数。
     追加または検索によって得られたbook_idを返す。
-
-    Parameters:
-    - db (AsyncSession): 非同期SQLAlchemyセッション。
-    - ncode (int): NCode。
-
-    Returns:
-    - int: 追加または検索によって得られたbook_id。
-
     """
-    # Bookテーブルからncodeに対応するbook_idを取得
-    book_query = select(Book.id).where(Book.ncode == ncode)
-    book_result = await db.execute(book_query)
-    book_record = book_result.scalars().first()
+    stmt = insert(Book).values(ncode=ncode).on_conflict_do_nothing(index_elements=['ncode'])
+    result = await db.execute(stmt)
+    await db.commit()
 
-    # 指定されたncodeの小説情報が存在しない場合、新規追加する
-    if not book_record:
-        new_book = Book(ncode=ncode)
-        db.add(new_book)
-        await db.commit()
-        await db.refresh(new_book)
-        return new_book.id
+    if result.returned_rows == 0:
+        # 追加された行がない場合、ncodeに対応する既存のレコードを取得
+        book_query = select(Book.id).where(Book.ncode == ncode)
+        book_result = await db.execute(book_query)
+        book_id = book_result.scalars().first()
     else:
-        return book_record
+        # 新規追加された場合、そのbook_idを取得
+        book_query = select(Book.id).where(Book.ncode == ncode)
+        book_result = await db.execute(book_query)
+        book_id = book_result.scalars().first()
+
+    return book_id
 
 async def create_or_check_existing_follow(db: AsyncSession, book_id: int) -> bool:
     """
     指定されたbook_idに基づいてFollowテーブルを検索し、存在しない場合は新しく作成する。
     既に存在する場合はTrueを返し、存在しない場合は新しく作成後にFalseを返す。
-
-    Parameters:
-    - db (AsyncSession): 非同期SQLAlchemyセッション。
-    - book_id (int): 検索対象のBook ID。
-
-    Returns:
-    - bool: Followエントリが既に存在するかどうか。
     """
-    query_follow = select(Follow).filter(Follow.book_id == book_id)
-    result_follow = await db.execute(query_follow)
-    follow = result_follow.scalars().first()
+    stmt = insert(Follow).values(book_id=book_id).on_conflict_do_nothing(index_elements=['book_id'])
+    result = await db.execute(stmt)
+    await db.commit()
 
-    if not follow:
-        follow = Follow(book_id=book_id)
-        db.add(follow)
-        await db.commit()
-        return False
-    else:
+    if result.rowcount == 0:
+        # 既に存在する場合
         return True
+    else:
+        # 新しく作成された場合
+        return False
 
 async def delete_follow_by_book_id(db: AsyncSession, book_id: int) -> bool:
     """
     指定されたbook_idに基づいてFollowテーブルからエントリを削除する。
-
-    Parameters:
-    - db (AsyncSession): 非同期SQLAlchemyセッション。
-    - book_id (int): 削除対象のBook ID。
-
-    Returns:
-    - bool: 削除が成功したかどうか。
     """
     query_delete_follow = delete(Follow).where(Follow.book_id == book_id)
     result = await db.execute(query_delete_follow)
