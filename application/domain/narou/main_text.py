@@ -9,8 +9,6 @@ from apis.user_agent import UserAgentManager
 from config.config import get_async_session
 from crud import ensure_book_exists,insert_read_history_if_not_exists
 from domain.narou.narou_data import NarouData
-from models.book import Book
-from models.read_history import ReadHistory
 from schemas.novel import NovelResponse
 
 async def get_main_text(
