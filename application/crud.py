@@ -1,63 +1,78 @@
-"""CRUDのUtils."""
-
-from fastapi import Depends, HTTPException, status
-from fastapi.security import APIKeyHeader
-from jose import JWTError, jwt
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.sql import func
 
-from config.config import get_async_session
-from config.environment import jwt_settings
-from models.customer import Customer
-from schemas.customer import CustomerModel
+from models.book import Book
+from models.read_history import ReadHistory
+from models.follow import Follow
 
-api_key_scheme = APIKeyHeader(name="Authorization")
+async def ensure_book_exists(db: AsyncSession, ncode: str) -> int:
+    """
+    指定されたncodeに基づいてBookテーブルを検索し、存在しない場合は新規追加する関数。
+    追加または検索によって得られたbook_idを返す。
 
+    Parameters:
+    - db (AsyncSession): 非同期SQLAlchemyセッション。
+    - ncode (int): NCode。
 
-async def get_current_customer(
-    api_key: str = Depends(api_key_scheme),
-    async_session: AsyncSession = Depends(get_async_session),
-):
-    """ログインしている顧客を取得."""
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    header = api_key.split()
-    if len(header) != 2:
-        raise credentials_exception
-    prefix, token = header
-    if prefix.lower() != "bearer":
-        raise credentials_exception
-    try:
-        payload = jwt.decode(
-            token,
-            jwt_settings.JWT_SECRET_KEY,
-            algorithms=jwt_settings.JWT_ALGORITHM,
-        )
-        customer_id = payload.get("sub")
-        if customer_id is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
+    Returns:
+    - int: 追加または検索によって得られたbook_id。
 
-    result = await async_session.execute(
-        select(Customer).where(Customer.id == customer_id)
-    )
-    customer = result.scalar_one_or_none()
-    if customer is None:
-        raise credentials_exception
-    return customer
+    """
+    # Bookテーブルからncodeに対応するbook_idを取得
+    book_query = select(Book.id).where(Book.ncode == ncode)
+    book_result = await db.execute(book_query)
+    book_record = book_result.scalars().first()
 
+    # 指定されたncodeの小説情報が存在しない場合、新規追加する
+    if not book_record:
+        new_book = Book(ncode=ncode)
+        db.add(new_book)
+        await db.commit()
+        await db.refresh(new_book)
+        return new_book.id
+    else:
+        return book_record
 
-async def create_customer(
-    async_session: AsyncSession, customer_model: CustomerModel
-) -> Customer:
-    """顧客を生成."""
-    customer = Customer(name=customer_model.name)
-    customer.set_password(customer_model.password)
-    async_session.add(customer)
-    await async_session.commit()
-    await async_session.refresh(customer)
-    return customer
+async def create_or_check_existing_follow(db: AsyncSession, book_id: int) -> bool:
+    """
+    指定されたbook_idに基づいてFollowテーブルを検索し、存在しない場合は新しく作成する。
+    既に存在する場合はTrueを返し、存在しない場合は新しく作成後にFalseを返す。
+
+    Parameters:
+    - db (AsyncSession): 非同期SQLAlchemyセッション。
+    - book_id (int): 検索対象のBook ID。
+
+    Returns:
+    - bool: Followエントリが既に存在するかどうか。
+    """
+    query_follow = select(Follow).filter(Follow.book_id == book_id)
+    result_follow = await db.execute(query_follow)
+    follow = result_follow.scalars().first()
+
+    if not follow:
+        follow = Follow(book_id=book_id)
+        db.add(follow)
+        await db.commit()
+        return False
+    else:
+        return True
+
+async def delete_follow_by_book_id(db: AsyncSession, book_id: int) -> bool:
+    """
+    指定されたbook_idに基づいてFollowテーブルからエントリを削除する。
+
+    Parameters:
+    - db (AsyncSession): 非同期SQLAlchemyセッション。
+    - book_id (int): 削除対象のBook ID。
+
+    Returns:
+    - bool: 削除が成功したかどうか。
+    """
+    query_delete_follow = delete(Follow).where(Follow.book_id == book_id)
+    result = await db.execute(query_delete_follow)
+    await db.commit()
+
+    # 削除された行があればTrue、そうでなければFalseを返す
+    return result.rowcount > 0

@@ -6,7 +6,7 @@ from config.config import get_async_session
 from domain.narou.main_text import get_main_text
 from domain.narou.follow import post_follow,delete_follow
 from models.novel import NovelResponse
-from models.follow import FollowResponse
+from schemas.follow import FollowResponse
 
 
 router = APIRouter()

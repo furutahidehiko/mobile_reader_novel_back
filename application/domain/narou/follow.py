@@ -1,81 +1,33 @@
 from fastapi import HTTPException
-
-from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy.orm import sessionmaker
 
-from models.follow import Follow, FollowResponse
-from models.read_history import ReadHistory
+from crud import ensure_book_exists,create_or_check_existing_follow
+from schemas.follow import FollowResponse
 
 async def post_follow(db: AsyncSession, ncode: str):
     """
     指定されたncodeに基づいて小説の情報を取得し、それをお気に入りに設定する関数。
-
-    Parameters:
-    - db (AsyncSession): 非同期SQLAlchemyセッション。データベースとの非同期通信。
-    - ncode (str): 検索対象の小説コード。
-
-    Returns:
-    - FollowResponse: レスポンスモデルのインスタンス。
     """
-
-    # ReadHistoryからncodeに対応するエントリを検索
-    query_read_history = select(ReadHistory).filter(ReadHistory.ncode == ncode)
-    result_read_history = await db.execute(query_read_history)
-    read_history = result_read_history.scalars().first()
-
-    if not read_history:
-        # ReadHistoryに対応するエントリがなければエラー
-        raise HTTPException(status_code=404, detail="ReadHistoryが見つかりません")
-
-    # Followテーブルで対応するエントリを検索
-    query_follow = select(Follow).filter(Follow.read_history_id == read_history.id)
-    result_follow = await db.execute(query_follow)
-    follow = result_follow.scalars().first()
+    # Bookテーブルからncodeに対応するbook_idを取得。
+    book_id = await ensure_book_exists(db, ncode)
+    # Followテーブルを検索し、boolを返す。
+    follow = await create_or_check_existing_follow(db, book_id)
 
     if follow:
-        # Followエントリが既に存在する場合、followをTrueに更新
-        follow.is_follow = True
+        raise HTTPException(status_code=400, detail="既にお気に入りに追加されています。")
     else:
-        # Followエントリが存在しない場合、新しく作成してfollowをTrueに設定
-        follow = Follow(read_history_id=read_history.id, is_follow=True)
-        db.add(follow)
-
-    await db.commit()  # 変更をコミット
-
-    return FollowResponse(is_success=True)
-
+        return FollowResponse(is_success=True)
 
 async def delete_follow(db: AsyncSession, ncode: str):
     """
-    指定されたncodeに基づいて小説の情報を取得し、それをお気に入り削除する関数。
-
-    Parameters:
-    - db (AsyncSession): 非同期SQLAlchemyセッション。データベースとの非同期通信。
-    - ncode (str): 検索対象の小説コード。
-
-    Returns:
-    - FollowResponse: レスポンスモデルのインスタンス。
+    指定されたncodeに基づいて小説の情報を取得し、それをお気に入りから削除する関数。
     """
-    # ReadHistoryからncodeに対応するエントリを検索
-    query_read_history = select(ReadHistory.id).filter(ReadHistory.ncode == ncode)
-    result_read_history = await db.execute(query_read_history)
-    read_history_id = result_read_history.scalars().first()
-
-    if not read_history_id:
-        # ReadHistoryに対応するエントリがなければエラー
-        raise HTTPException(status_code=404, detail="ReadHistoryが見つかりません")
-
+    # Bookテーブルからncodeに対応するbook_idを取得
+    book_id = await ensure_book_exists(db, ncode)
     # Followテーブルで対応するエントリを検索し、削除する
-    query_delete_follow = delete(Follow).where(Follow.read_history_id == read_history_id).where(Follow.is_follow == True)
-    result = await db.execute(query_delete_follow)
+    success = await delete_follow_by_book_id(db, book_id)
     
-    # 削除が実行されたか確認
-    if result.rowcount:
-        # 変更をコミット
-        await db.commit()
+    if success:
         return FollowResponse(is_success=True)
     else:
-        # 削除対象がなかった場合
-        raise HTTPException(status_code=404, detail="削除対象が見つかりません")
+        raise HTTPException(status_code=400, detail="お気に入りされていません。")
