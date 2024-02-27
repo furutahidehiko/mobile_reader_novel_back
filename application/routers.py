@@ -13,6 +13,9 @@ router = APIRouter()
 @router.get(
     "/api/maintext",
     response_model=NovelResponse,
+    summary="本文取得API",
+    description="指定されたNコードとエピソード番号から小説本文に関する情報を取得します。",
+    tags=["小説表示画面"]
 )
 async def main_text(
     *,
@@ -26,7 +29,7 @@ async def main_text(
 @router.get(
     "/api/novelinfo",
     response_model=NovelInfoResponse,
-    summary="目次情報を取得",
+    summary="小説情報取得API",
     description="指定されたNコードから目次ページに関する情報を取得します。",
     tags=["目次画面"]
 )
