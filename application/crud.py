@@ -12,20 +12,15 @@ async def ensure_book_exists(db: AsyncSession, ncode: str) -> int:
     指定されたncodeに基づいてBookテーブルを検索し、存在しない場合は新規追加する関数。
     追加または検索によって得られたbook_idを返す。
     """
+    # UPSERT操作
     stmt = insert(Book).values(ncode=ncode).on_conflict_do_nothing(index_elements=['ncode'])
-    result = await db.execute(stmt)
+    await db.execute(stmt)
     await db.commit()
 
-    if result.returned_rows == 0:
-        # 追加された行がない場合、ncodeに対応する既存のレコードを取得
-        book_query = select(Book.id).where(Book.ncode == ncode)
-        book_result = await db.execute(book_query)
-        book_id = book_result.scalars().first()
-    else:
-        # 新規追加された場合、そのbook_idを取得
-        book_query = select(Book.id).where(Book.ncode == ncode)
-        book_result = await db.execute(book_query)
-        book_id = book_result.scalars().first()
+    # ncodeに対応するbook_idを取得
+    book_query = select(Book.id).where(Book.ncode == ncode)
+    book_result = await db.execute(book_query)
+    book_id = book_result.scalars().first()
 
     return book_id
 
