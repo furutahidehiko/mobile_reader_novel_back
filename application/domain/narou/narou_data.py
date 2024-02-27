@@ -7,7 +7,7 @@ from dataclasses import dataclass
 class Count:
     """検索ヒット数."""
 
-    allcount: int
+    allcount: int = 0
 
 
 @dataclass
