@@ -12,20 +12,22 @@ async def ensure_book_exists(db: AsyncSession, ncode: str) -> int:
     指定されたncodeに基づいてBookテーブルを検索し、存在しない場合は新規追加する関数。
     追加または検索によって得られたbook_idを返す。
     """
-    # Bookテーブルからncodeに対応するbook_idを取得
-    book_query = select(Book.id).where(Book.ncode == ncode)
-    book_result = await db.execute(book_query)
-    book_record = book_result.scalars().first()
+    stmt = insert(Book).values(ncode=ncode).on_conflict_do_nothing(index_elements=['ncode'])
+    result = await db.execute(stmt)
+    await db.commit()
 
-    # 指定されたncodeの小説情報が存在しない場合、新規追加する
-    if not book_record:
-        new_book = Book(ncode=ncode)
-        db.add(new_book)
-        await db.commit()
-        await db.refresh(new_book)
-        return new_book.id
+    if result.returned_rows == 0:
+        # 追加された行がない場合、ncodeに対応する既存のレコードを取得
+        book_query = select(Book.id).where(Book.ncode == ncode)
+        book_result = await db.execute(book_query)
+        book_id = book_result.scalars().first()
     else:
-        return book_record
+        # 新規追加された場合、そのbook_idを取得
+        book_query = select(Book.id).where(Book.ncode == ncode)
+        book_result = await db.execute(book_query)
+        book_id = book_result.scalars().first()
+
+    return book_id
 
 async def insert_read_history_if_not_exists(db: AsyncSession, book_id: int, episode: int):
     """
