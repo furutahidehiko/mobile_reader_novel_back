@@ -28,7 +28,7 @@ async def main_text(
 @router.post(
     "/api/follow",
     response_model=FollowResponse,
-    summary="お気に入り登録",
+    summary="お気に入り登録API",
     description="指定されたNコードをお気に入り登録します。",
     tags=["お気に入り"]
 )
@@ -38,7 +38,7 @@ async def post_follow_router(ncode: str, db: AsyncSession = Depends(get_async_se
 @router.delete(
     "/api/follow",
     response_model=FollowResponse,
-    summary="お気に入り削除",
+    summary="お気に入り削除API",
     description="指定されたNコードをお気に入り削除します。",
     tags=["お気に入り"]
 )
