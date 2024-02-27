@@ -16,7 +16,12 @@ router = APIRouter()
     "/api/maintext",
     response_model=NovelResponse,
 )
-def main_text(*, ncode: str, episode: int):
+async def main_text(
+    *,
+    ncode: str,
+    episode: int,
+    async_session: AsyncSession = Depends(get_async_session),
+):
     """小説取得APIのエンドポイント."""
     return get_main_text(ncode, episode)
 
