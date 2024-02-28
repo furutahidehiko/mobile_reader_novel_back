@@ -1,36 +1,39 @@
-"""Jsonデータのマッピングクラス."""
+from requests.models import Response
 from dataclasses import dataclass
+
 
 
 @dataclass
 class Count:
     """検索ヒット数."""
 
-    allcount: int
+    allcount: int = 0
 
 
 @dataclass
 class NovelData:
     """小説情報."""
-
-    title: str
-    general_all_no: int
+    title: str = ""
+    general_all_no: int = 0
+    writer: str = ""
+    general_firstup: str = ""
+    keyword: str = ""
+    story: str = ""
+    biggenre: int = 0 
+    genre: int = 0
+    general_lastup: str = ""
 
 
 class NarouData:
-    """なろうの小説APIで取得したデータ."""
+    """なろうの小説APIから取得したデータを整形するクラス。"""
 
-    def __init__(self, data):
+    def __init__(self, response: Response):
+        self.count: Optional[Count] = None
+        self.novel_data: Optional[NovelData] = None
 
-        self.novel_data = None
-
-        """なろうの小説APIで取得したデータを整形."""
-
-        def get_condition(item, dataclass_name):
-            return item.keys() == dataclass_name.__dataclass_fields__.keys()
-
-        for item in data.json():
-            if get_condition(item, Count):
-                self.count = Count(**item)
-            elif get_condition(item, NovelData):
-                self.novel_data = NovelData(**item)
+        try:
+            data: Dict[str, Any] = response.json()
+            self.count = Count(**data[0])
+            self.novel_data = NovelData(**data[1])
+        except (KeyError, IndexError, TypeError) as e:
+            print(f"Error processing response data: {e}")

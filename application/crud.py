@@ -1,63 +1,62 @@
-"""CRUDのUtils."""
-
-from fastapi import Depends, HTTPException, status
-from fastapi.security import APIKeyHeader
-from jose import JWTError, jwt
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.sql import func
 
-from config.config import get_async_session
-from config.environment import jwt_settings
-from models.customer import Customer
-from schemas.customer import CustomerModel
+from models.book import Book
+from models.read_history import ReadHistory
+from models.follow import Follow
 
-api_key_scheme = APIKeyHeader(name="Authorization")
+async def ensure_book_exists(db: AsyncSession, ncode: str) -> int:
+    """
+    指定されたncodeに基づいてBookテーブルを検索し、存在しない場合は新規追加する関数。
+    追加または検索によって得られたbook_idを返す。
+    """
+    # UPSERT操作
+    stmt = insert(Book).values(ncode=ncode).on_conflict_do_nothing(index_elements=['ncode'])
+    await db.execute(stmt)
+    await db.commit()
 
+    # ncodeに対応するbook_idを取得
+    book_query = select(Book.id).where(Book.ncode == ncode)
+    book_result = await db.execute(book_query)
+    book_id = book_result.scalars().first()
 
-async def get_current_customer(
-    api_key: str = Depends(api_key_scheme),
-    async_session: AsyncSession = Depends(get_async_session),
-):
-    """ログインしている顧客を取得."""
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+    return book_id
+
+async def update_or_create_read_history(db: AsyncSession, book_id: int, episode: int):
+    """
+    指定されたbook_idに対応する既読情報を更新する。既読情報が存在しない場合は新たに挿入する。
+    """
+    stmt = insert(ReadHistory).values(book_id=book_id, read_episode=episode)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["book_id"],
+        set_={"read_episode": stmt.excluded.read_episode},
+        where=(ReadHistory.read_episode != stmt.excluded.read_episode)
     )
-    header = api_key.split()
-    if len(header) != 2:
-        raise credentials_exception
-    prefix, token = header
-    if prefix.lower() != "bearer":
-        raise credentials_exception
-    try:
-        payload = jwt.decode(
-            token,
-            jwt_settings.JWT_SECRET_KEY,
-            algorithms=jwt_settings.JWT_ALGORITHM,
-        )
-        customer_id = payload.get("sub")
-        if customer_id is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
+    await db.execute(stmt)
+    await db.commit()
 
-    result = await async_session.execute(
-        select(Customer).where(Customer.id == customer_id)
-    )
-    customer = result.scalar_one_or_none()
-    if customer is None:
-        raise credentials_exception
-    return customer
+async def get_latest_read_episode_by_book_id(db: AsyncSession, book_id: int) -> int:
+    """
+    指定されたbook_idに対応する既読エピソード数を非同期で取得する関数。
+    """
+    query = select(ReadHistory.read_episode).filter(ReadHistory.book_id == book_id)
+    result = await db.execute(query)
+    latest_read_episode = result.scalar()
+
+    if latest_read_episode is None:
+        latest_read_episode = 0
+    return latest_read_episode
 
 
-async def create_customer(
-    async_session: AsyncSession, customer_model: CustomerModel
-) -> Customer:
-    """顧客を生成."""
-    customer = Customer(name=customer_model.name)
-    customer.set_password(customer_model.password)
-    async_session.add(customer)
-    await async_session.commit()
-    await async_session.refresh(customer)
-    return customer
+async def check_follow_exists_by_book_id(db: AsyncSession, book_id: int) -> bool:
+    """
+    指定されたbook_idに紐づくFollowレコードの存在有無に基づいてフォローの有無を返す関数。
+    """
+    # Followテーブルからbook_idに紐づくレコードの存在チェック
+    follow_existence_query = select(Follow.id).filter(Follow.book_id == book_id)
+    follow_existence_result = await db.execute(follow_existence_query)
+    if follow_existence_result.scalars().first() is None:
+        return False
+    return True
