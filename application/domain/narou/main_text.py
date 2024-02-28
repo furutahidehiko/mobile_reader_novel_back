@@ -7,7 +7,7 @@ from apis.request import request_get
 from apis.urls import Url
 from apis.user_agent import UserAgentManager
 from config.config import get_async_session
-from crud import ensure_book_exists,insert_read_history_if_not_exists
+from crud import ensure_book_exists,update_or_create_read_history
 from domain.narou.narou_data import NarouData
 from schemas.novel import NovelResponse
 
@@ -74,8 +74,8 @@ async def get_main_text(
 
     # 非同期データベースクエリを実行してbook_idを取得
     book_id = await ensure_book_exists(db,ncode)
-    # 既読していなければ、データを挿入
-    await insert_read_history_if_not_exists(db, book_id, episode)
+    # 指定されたbook_idに対応する既読情報を更新
+    await update_or_create_read_history(db, book_id, episode)
 
     novel = NovelResponse(
         title=novel_data.title,

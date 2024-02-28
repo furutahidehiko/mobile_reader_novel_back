@@ -24,33 +24,33 @@ async def ensure_book_exists(db: AsyncSession, ncode: str) -> int:
 
     return book_id
 
-async def insert_read_history_if_not_exists(db: AsyncSession, book_id: int, episode: int):
+async def update_or_create_read_history(db: AsyncSession, book_id: int, episode: int):
     """
-    指定されたbook_idとエピソードに対応する既読情報が存在しなければ、データを挿入する関数。
+    指定されたbook_idに対応する既読情報を更新する。既読情報が存在しない場合は新たに挿入する。
     """
-    stmt = (
-        insert(ReadHistory).
-        values(book_id=book_id, read_episode=episode).
-        on_conflict_do_nothing(index_elements=['book_id', 'read_episode'])
+    stmt = insert(ReadHistory).values(book_id=book_id, read_episode=episode)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["book_id"],
+        set_={"read_episode": stmt.excluded.read_episode},
+        where=(ReadHistory.read_episode != stmt.excluded.read_episode)
     )
     await db.execute(stmt)
     await db.commit()
 
-async def get_read_episode_by_ncode(db: AsyncSession, book_id: int) -> int:
+async def get_latest_read_episode_by_book_id(db: AsyncSession, book_id: int) -> int:
     """
-    指定されたbook_idに基づいてread_episodeの値を非同期で取得する関数。
+    指定されたbook_idに対応する既読エピソード数を非同期で取得する関数。
     """
-    # ReadHistoryからbook_idに基づくread_episodeの最大値を取得
-    query = select(func.max(ReadHistory.read_episode)).filter(ReadHistory.book_id == book_id)
+    query = select(ReadHistory.read_episode).filter(ReadHistory.book_id == book_id)
     result = await db.execute(query)
-    max_read_episode = result.scalars().first()
+    latest_read_episode = result.scalar()
 
-    if max_read_episode is None:
-        max_read_episode = 0
-    return max_read_episode
+    if latest_read_episode is None:
+        latest_read_episode = 0
+    return latest_read_episode
 
 
-async def check_follow_exists_by_ncode(db: AsyncSession, book_id: int) -> bool:
+async def check_follow_exists_by_book_id(db: AsyncSession, book_id: int) -> bool:
     """
     指定されたbook_idに紐づくFollowレコードの存在有無に基づいてフォローの有無を返す関数。
     """
