@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from fastapi import HTTPException,status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apis.request import request_get
@@ -44,7 +45,10 @@ def scrape_narou_chapters(ncode: str, total_episodes: int) -> list:
         }
         resp = request_get(Url.NOVEL_URL.value, headers=headers,payload=payload)
         if resp is None:
-            continue
+            raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ページが存在しません",
+        )
 
         soup = BeautifulSoup(resp.content, 'html.parser')
         
