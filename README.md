@@ -19,43 +19,14 @@
 | `JWT_SECRET_KEY`  | JWTの秘密鍵             | `8ae240d39...376193c6`  |
 
 ### コンテナの操作
+|コマンド|内容|
+|-----|-----|
+|make build	|Dockerイメージの作成。開発用のdocker-compose.ymlを指定してビルドを行います。|
+|make up	|コンテナを起動。このコマンドはdocker-compose upコマンドをラップしており、プロジェクトに必要なサービスコンテナを起動します。|
+|make down	|コンテナを停止。これはdocker-compose downコマンドのラッパーで、起動しているコンテナを停止し、ネットワークを削除します。|
+|poetry run alembic revision --autogenerate	|マイグレーションファイルを自動生成。モデルに対して行われた変更を元に新しいマイグレーションファイルを作成します。|
+|poetry run alembic upgrade head|	データベースに最新のマイグレーションを適用。データベースを最新のスキーマに更新します。|
 
-1. イメージの作成
-
-以下コマンドで Docker image を作成します。ファイルは開発用の docker-compose.yml を指定します。
-"""
-make build
-"""
-
-2. コンテナの起動
-
-以下のコマンドでコンテナを起動します。
-
-"""
-make up
-"""
-
-3. 動作確認
-
-http://localhost:8000 にアクセスし、Swaggerの画面が出たら成功です。
-
-### コンテナの停止
-
-以下のコマンドでコンテナを停止します。
-"""
-make down
-"""
-
-### マイグレーション
-
-#### マイグレーションファイルを作成する
-"""
-poetry run alembic revision --autogenerate
-"""
-
-#### マイグレーションを実行する
-
-"""
-poetry run alembic upgrade head
-"""
-
+### 動作確認
+URL: http://localhost:8000
+確認内容: Swagger UIの画面が表示されることを確認。これが表示されれば、アプリケーションが正しく起動している証拠です。
