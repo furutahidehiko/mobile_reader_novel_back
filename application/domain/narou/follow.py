@@ -14,7 +14,7 @@ async def post_follow(db: AsyncSession, ncode: str):
     follow = await create_or_check_existing_follow(db, book_id)
 
     if follow:
-        raise HTTPException(status_code=400, detail="既にお気に入りに追加されています。")
+        raise FollowResponse(is_success=False)
     else:
         return FollowResponse(is_success=True)
 
@@ -30,4 +30,4 @@ async def delete_follow(db: AsyncSession, ncode: str):
     if success:
         return FollowResponse(is_success=True)
     else:
-        raise HTTPException(status_code=400, detail="お気に入りされていません。")
+        raise FollowResponse(is_success=False)
