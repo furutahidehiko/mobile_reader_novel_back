@@ -34,10 +34,8 @@ async def create_or_check_existing_follow(db: AsyncSession, book_id: int) -> boo
     await db.commit()
 
     if result.rowcount == 0:
-        # 既に存在する場合
         return True
     else:
-        # 新しく作成された場合
         return False
 
 async def delete_follow_by_book_id(db: AsyncSession, book_id: int) -> bool:
@@ -50,3 +48,39 @@ async def delete_follow_by_book_id(db: AsyncSession, book_id: int) -> bool:
 
     # 削除された行があればTrue、そうでなければFalseを返す
     return result.rowcount > 0
+
+async def update_or_create_read_history(db: AsyncSession, book_id: int, episode: int):
+    """
+    指定されたbook_idに対応する既読情報を更新する。既読情報が存在しない場合は新たに挿入する。
+    """
+    stmt = insert(ReadHistory).values(book_id=book_id, read_episode=episode)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["book_id"],
+        set_={"read_episode": stmt.excluded.read_episode},
+        where=(ReadHistory.read_episode != stmt.excluded.read_episode)
+    )
+    await db.execute(stmt)
+    await db.commit()
+
+async def get_latest_read_episode_by_book_id(db: AsyncSession, book_id: int) -> int:
+    """
+    指定されたbook_idに対応する既読エピソード数を非同期で取得する関数。
+    """
+    query = select(ReadHistory.read_episode).filter(ReadHistory.book_id == book_id)
+    result = await db.execute(query)
+    latest_read_episode = result.scalar()
+
+    if latest_read_episode is None:
+        latest_read_episode = 0
+    return latest_read_episode
+
+async def check_follow_exists_by_book_id(db: AsyncSession, book_id: int) -> bool:
+    """
+    指定されたbook_idに紐づくFollowレコードの存在有無に基づいてフォローの有無を返す関数。
+    """
+    # Followテーブルからbook_idに紐づくレコードの存在チェック
+    follow_existence_query = select(Follow.id).filter(Follow.book_id == book_id)
+    follow_existence_result = await db.execute(follow_existence_query)
+    if follow_existence_result.scalars().first() is None:
+        return False
+    return True

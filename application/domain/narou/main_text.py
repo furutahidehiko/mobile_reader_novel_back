@@ -1,16 +1,15 @@
 """小説取得API."""
 from bs4 import BeautifulSoup
 from fastapi import Depends, HTTPException, status
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apis.request import request_get
+from apis.urls import Url
+from apis.user_agent import UserAgentManager
 from config.config import get_async_session
+from crud import ensure_book_exists,update_or_create_read_history
 from domain.narou.narou_data import NarouData
 from schemas.novel import NovelResponse
-from models.readhistory import ReadHistory
-from urls import Url
-
 
 async def get_main_text(
     ncode: str,
@@ -60,14 +59,9 @@ async def get_main_text(
 
     novel_url = Url.NOVEL_URL.join(ncode, str(episode))
 
-    # TODO:別PRの小説情報取得APIで使用しているUser-Agentクラスを利用予定
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-            "AppleWebKit/537.36 (KHTML, like Gecko)"
-            "Chrome/97.0.4692.71 Safari/537.36"
-        )
-    }
+    # ユーザーエージェントを設定
+    ua_manager = UserAgentManager()
+    headers = ua_manager.get_random_user_headers()
 
     novel_response = request_get(novel_url, headers, payload)
     soup = BeautifulSoup(novel_response.text, "html.parser")
@@ -78,18 +72,10 @@ async def get_main_text(
     honbun += "\n"
     result_list = honbun.split("\n")
 
-    # レコードがあるかつread_episodeとepisodeに差異があった場合のみ更新、無い場合は作成する
-    stmt = insert(ReadHistory).values(ncode=ncode, read_episode=episode)
-    stmt = stmt.on_conflict_do_update(
-        index_elements=["ncode"],
-        set_={"read_episode": stmt.excluded.read_episode},
-        where=(ReadHistory.read_episode != stmt.excluded.read_episode),
-    )
-
-    await db.execute(stmt)
-
-    await db.commit()
-        
+    # 非同期データベースクエリを実行してbook_idを取得
+    book_id = await ensure_book_exists(db,ncode)
+    # 指定されたbook_idに対応する既読情報を更新
+    await update_or_create_read_history(db, book_id, episode)
 
     novel = NovelResponse(
         title=novel_data.title,
