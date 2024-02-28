@@ -84,7 +84,6 @@ async def get_novel_info(db: AsyncSession, ncode: str):
     Returns:
     - NovelInfoResponse: 取得した小説情報を含むレスポンスモデルのインスタンス。
     """
-    # t-ga：小説名、全話数を出力
     payload = {
         "of": "t-ga-w-gf-k-s-bg-g-gl",
         "ncode": {ncode},
