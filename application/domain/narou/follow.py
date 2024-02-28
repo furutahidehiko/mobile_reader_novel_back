@@ -11,12 +11,9 @@ async def post_follow(db: AsyncSession, ncode: str):
     # Bookテーブルからncodeに対応するbook_idを取得。
     book_id = await ensure_book_exists(db, ncode)
     # Followテーブルを検索し、boolを返す。
-    follow = await create_or_check_existing_follow(db, book_id)
+    follow = not await create_or_check_existing_follow(db, book_id)
 
-    if follow:
-        raise FollowResponse(is_success=False)
-    else:
-        return FollowResponse(is_success=True)
+    return FollowResponse(is_success=follow)
 
 async def delete_follow(db: AsyncSession, ncode: str):
     """
@@ -27,7 +24,4 @@ async def delete_follow(db: AsyncSession, ncode: str):
     # Followテーブルで対応するエントリを検索し、削除する
     success = await delete_follow_by_book_id(db, book_id)
     
-    if success:
-        return FollowResponse(is_success=True)
-    else:
-        raise FollowResponse(is_success=False)
+    return FollowResponse(is_success=success)
