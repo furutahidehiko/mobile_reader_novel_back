@@ -99,6 +99,8 @@ async def get_novel_info(db: AsyncSession, ncode: str):
     read_episode = await get_latest_read_episode_by_book_id(db, book_id)
     # 非同期データベースクエリを実行してis_followを取得
     is_follow = await check_follow_exists_by_book_id(db, book_id)
+    # 指定されたncodeの小説の目次情報をスクレイピングで取得
+    chapters = scrape_narou_chapters(ncode, data.novel_data.general_all_no)
     
     # APIレスポンスから小説データを抽出
     novel_data = {
@@ -112,7 +114,7 @@ async def get_novel_info(db: AsyncSession, ncode: str):
     "sub_category": Genre.get_label_by_id(data.novel_data.genre),
     "updated_at": data.novel_data.general_lastup,
     "read_episode": read_episode,
-    "chapters": scrape_narou_chapters(ncode, data.novel_data.general_all_no),
+    "chapters": chapters,
     "is_follow": is_follow
 }
 
