@@ -45,7 +45,9 @@ async def get_read_episode_by_ncode(db: AsyncSession, book_id: int) -> int:
     result = await db.execute(query)
     max_read_episode = result.scalars().first()
 
-    return max_read_episode if max_read_episode is not None else 0
+    if max_read_episode is None:
+        max_read_episode = 0
+    return max_read_episode
 
 
 async def check_follow_exists_by_ncode(db: AsyncSession, book_id: int) -> bool:
@@ -55,6 +57,6 @@ async def check_follow_exists_by_ncode(db: AsyncSession, book_id: int) -> bool:
     # Followテーブルからbook_idに紐づくレコードの存在チェック
     follow_existence_query = select(Follow.id).filter(Follow.book_id == book_id)
     follow_existence_result = await db.execute(follow_existence_query)
-    follow_exists = follow_existence_result.scalars().first() is not None
-
-    return follow_exists
+    if follow_existence_result.scalars().first() is None:
+        return False
+    return True
