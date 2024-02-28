@@ -1,3 +1,4 @@
+from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -24,6 +25,27 @@ async def ensure_book_exists(db: AsyncSession, ncode: str) -> int:
 
     return book_id
 
+async def create_or_check_existing_follow(db: AsyncSession, book_id: int) -> bool:
+    """
+    指定されたbook_idに基づいてFollowテーブルを検索し、存在しない場合は新しく作成する。
+    既に存在する場合はTrueを返し、存在しない場合は新しく作成後にFalseを返す。
+    """
+    stmt = insert(Follow).values(book_id=book_id).on_conflict_do_nothing(index_elements=['book_id'])
+    result = await db.execute(stmt)
+    await db.commit()
+
+    return result.rowcount == 0:
+
+async def delete_follow_by_book_id(db: AsyncSession, book_id: int) -> bool:
+    """
+    指定されたbook_idに基づいてFollowテーブルからエントリを削除する。
+    """
+    query_delete_follow = delete(Follow).where(Follow.book_id == book_id)
+    result = await db.execute(query_delete_follow)
+    await db.commit()
+
+    return result.rowcount > 0
+
 async def update_or_create_read_history(db: AsyncSession, book_id: int, episode: int):
     """
     指定されたbook_idに対応する既読情報を更新する。既読情報が存在しない場合は新たに挿入する。
@@ -48,7 +70,6 @@ async def get_latest_read_episode_by_book_id(db: AsyncSession, book_id: int) -> 
     if latest_read_episode is None:
         latest_read_episode = 0
     return latest_read_episode
-
 
 async def check_follow_exists_by_book_id(db: AsyncSession, book_id: int) -> bool:
     """

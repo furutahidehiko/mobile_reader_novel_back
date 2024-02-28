@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: d393f331bf5d
+Revision ID: d48214f71cd3
 Revises: 
-Create Date: 2024-02-28 12:57:26.641325
+Create Date: 2024-02-28 14:21:03.500201
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'd393f331bf5d'
+revision: str = 'd48214f71cd3'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -30,12 +30,13 @@ def upgrade() -> None:
     sa.Column('book_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False, comment='ID'),
     sa.ForeignKeyConstraint(['book_id'], ['book.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('book_id')
     )
     op.create_table('read_history',
-    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('book_id', sa.Integer(), nullable=False),
     sa.Column('read_episode', sa.Integer(), nullable=False, comment='既読した話数'),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False, comment='ID'),
     sa.ForeignKeyConstraint(['book_id'], ['book.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('book_id'),

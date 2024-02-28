@@ -8,4 +8,4 @@ class Follow(Base):
 
     __tablename__ = "follow"
 
-    book_id = Column(Integer, ForeignKey('book.id'), nullable=False)
+    book_id = Column(Integer, ForeignKey('book.id'), nullable=False,unique=True)
