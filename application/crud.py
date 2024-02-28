@@ -1,3 +1,4 @@
+from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -46,7 +47,6 @@ async def delete_follow_by_book_id(db: AsyncSession, book_id: int) -> bool:
     result = await db.execute(query_delete_follow)
     await db.commit()
 
-    # 削除された行があればTrue、そうでなければFalseを返す
     return result.rowcount > 0
 
 async def update_or_create_read_history(db: AsyncSession, book_id: int, episode: int):
