@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apis.request import request_get
 from apis.urls import Url
 from apis.user_agent import UserAgentManager
-from crud import get_read_episode_by_ncode,check_follow_exists_by_ncode
+from crud import ensure_book_exists,get_read_episode_by_ncode,check_follow_exists_by_ncode
 from domain.narou.common import BigGenre,Genre
 from domain.narou.narou_data import NarouData
 from models.follow import Follow
@@ -94,10 +94,12 @@ async def get_novel_info(db: AsyncSession, ncode: str):
     response = request_get(Url.API_URL.value, payload=payload)
     data = NarouData(response)
 
+    # Bookテーブルからncodeに対応するbook_idを取得。
+    book_id = await ensure_book_exists(db, ncode)
     # 非同期データベースクエリを実行してread_episodeを取得
-    read_episode = await get_read_episode_by_ncode(db, ncode)
+    read_episode = await get_read_episode_by_ncode(db, book_id)
     # 非同期データベースクエリを実行してis_followを取得
-    is_follow = await check_follow_exists_by_ncode(db, ncode)
+    is_follow = await check_follow_exists_by_ncode(db, book_id)
     
     # APIレスポンスから小説データを抽出
     novel_data = {

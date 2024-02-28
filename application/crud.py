@@ -36,18 +36,10 @@ async def insert_read_history_if_not_exists(db: AsyncSession, book_id: int, epis
     await db.execute(stmt)
     await db.commit()
 
-async def get_read_episode_by_ncode(db: AsyncSession, ncode: str) -> int:
+async def get_read_episode_by_ncode(db: AsyncSession, book_id: int) -> int:
     """
-    指定されたncodeに基づいてread_episodeの値を非同期で取得する関数。
+    指定されたbook_idに基づいてread_episodeの値を非同期で取得する関数。
     """
-    # Bookテーブルからncodeに基づくbook_idを取得
-    book_query = select(Book.id).where(Book.ncode == ncode)
-    book_result = await db.execute(book_query)
-    book_id = book_result.scalars().first()
-
-    if book_id is None:
-        return 0
-
     # ReadHistoryからbook_idに基づくread_episodeの最大値を取得
     query = select(func.max(ReadHistory.read_episode)).filter(ReadHistory.book_id == book_id)
     result = await db.execute(query)
@@ -56,20 +48,10 @@ async def get_read_episode_by_ncode(db: AsyncSession, ncode: str) -> int:
     return max_read_episode if max_read_episode is not None else 0
 
 
-async def check_follow_exists_by_ncode(db: AsyncSession, ncode: str) -> bool:
+async def check_follow_exists_by_ncode(db: AsyncSession, book_id: int) -> bool:
     """
-    指定されたncodeに基づき、Bookテーブルからbook_idを取得し、
-    そのbook_idに紐づくFollowレコードの存在有無に基づいてフォローの有無を返す関数。
+    指定されたbook_idに紐づくFollowレコードの存在有無に基づいてフォローの有無を返す関数。
     """
-    # Bookテーブルからncodeに基づくbook_idを取得
-    book_query = select(Book.id).where(Book.ncode == ncode)
-    book_result = await db.execute(book_query)
-    book_id = book_result.scalars().first()
-
-    if book_id is None:
-        # book_idが取得できなければ、フォローされていないと判断
-        return False
-
     # Followテーブルからbook_idに紐づくレコードの存在チェック
     follow_existence_query = select(Follow.id).filter(Follow.book_id == book_id)
     follow_existence_result = await db.execute(follow_existence_query)
