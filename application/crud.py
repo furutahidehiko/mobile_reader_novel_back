@@ -34,10 +34,7 @@ async def create_or_check_existing_follow(db: AsyncSession, book_id: int) -> boo
     result = await db.execute(stmt)
     await db.commit()
 
-    if result.rowcount == 0:
-        return True
-    else:
-        return False
+    return result.rowcount == 0:
 
 async def delete_follow_by_book_id(db: AsyncSession, book_id: int) -> bool:
     """
