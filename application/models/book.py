@@ -8,6 +8,5 @@ class Book(Base):
 
     __tablename__ = "book"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
     ncode: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, comment="小説コード")
 
