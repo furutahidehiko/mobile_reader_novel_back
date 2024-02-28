@@ -107,7 +107,7 @@ async def get_novel_info(db: AsyncSession, ncode: str):
     "episode_count": data.novel_data.general_all_no, 
     "release_date": data.novel_data.general_firstup,
     "tag": data.novel_data.keyword.split(" "),
-    "summary": data.novel_data.story.split("\n"),
+    "summary": data.novel_data.story,
     "category": BigGenre.get_label_by_id(data.novel_data.biggenre),
     "sub_category": Genre.get_label_by_id(data.novel_data.genre),
     "updated_at": data.novel_data.general_lastup,
