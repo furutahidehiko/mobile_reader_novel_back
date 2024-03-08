@@ -7,17 +7,17 @@ from apis.request import request_get
 from apis.urls import Url
 from apis.user_agent import UserAgentManager
 from config.config import get_async_session
-from crud import ensure_book_exists,update_or_create_read_history
+from crud import ensure_book_exists, update_or_create_read_history
 from domain.narou.narou_data import NarouData
 from schemas.novel import NovelResponse
+
 
 async def get_main_text(
     ncode: str,
     episode: int,
     db: AsyncSession = Depends(get_async_session),
 ) -> dict:
-    """
-    指定されたncode(小説コード)とepisode(話数)の小説本文をスクレイピングで取得する関数。
+    """指定されたncode(小説コード)とepisode(話数)の小説本文をスクレイピングで取得する関数。.
 
     Parameters:
     - ncode (str): スクレイピング対象の小説のNコード。
@@ -25,7 +25,6 @@ async def get_main_text(
     Returns:
     - dict: 小説のタイトル、サブタイトル、本文(リスト形式)、次話・全話有無を含む辞書。
     """
-
     # t-ga：小説名、全話数を出力
     payload = {
         "of": "t-ga",
@@ -73,7 +72,7 @@ async def get_main_text(
     result_list = honbun.split("\n")
 
     # 非同期データベースクエリを実行してbook_idを取得
-    book_id = await ensure_book_exists(db,ncode)
+    book_id = await ensure_book_exists(db, ncode)
     # 指定されたbook_idに対応する既読情報を更新
     await update_or_create_read_history(db, book_id, episode)
 
@@ -84,6 +83,5 @@ async def get_main_text(
         next=next_episode,
         prev=prev_episode,
     )
-
 
     return novel
