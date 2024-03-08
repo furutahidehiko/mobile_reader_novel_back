@@ -40,3 +40,6 @@ migration:
 
 upgrade:
 	$(POETRY_RUN) alembic upgrade head
+
+fixtures:
+	$(POETRY_RUN) python command.py load_json fixtures.json
