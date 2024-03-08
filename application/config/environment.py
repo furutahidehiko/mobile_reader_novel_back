@@ -48,6 +48,9 @@ class JWTSettings(BaseSettings):
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     """トークンの有効期限(分)"""
 
+    JWT_REFRESH_TOKEN_EXPIRE_MINUTES: int = 90
+    """トークンの有効期限(分)"""
+
 
 settings = VariableSettings()
 """環境変数"""

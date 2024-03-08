@@ -1,10 +1,13 @@
 """ルーター用モジュール."""
-from fastapi import APIRouter, Depends
+
+from schemas.user import AuthUserModel, AuthUserResponse
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.config import get_async_session
 from domain.narou.main_text import get_main_text
 from domain.narou.novel_info import get_novel_info
+from domain.user.token import auth_token
 from schemas.novel import NovelInfoResponse, NovelResponse
 
 router = APIRouter()
@@ -35,3 +38,17 @@ async def main_text(
 )
 async def novel_info(ncode: str, db: AsyncSession = Depends(get_async_session)):
     return await get_novel_info(db, ncode)
+
+@router.post(
+    "/token/",
+    response_model=AuthUserResponse,
+    status_code=status.HTTP_200_OK,
+    summary="トークン認証API",
+    description="ID/パスワードorリフレッシュトークンによる認証を行い新たなアクセストークンとリフレッシュトークンを発行します。",
+    tags=["token"],
+)
+async def auth_token(
+    auth_data: AuthUserModel,
+    async_session: AsyncSession = Depends(get_async_session),
+):
+    return await auth_token(auth_data=auth_data,async_session=async_session)
