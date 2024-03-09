@@ -1,6 +1,9 @@
-from requests.models import Response
-from dataclasses import dataclass
+"""このモジュールは、小説家になろうAPIから取得したデータを扱うためのクラスとデータ構造を定義しています."""
 
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
+
+from requests.models import Response
 
 
 @dataclass
@@ -13,21 +16,31 @@ class Count:
 @dataclass
 class NovelData:
     """小説情報."""
+
     title: str = ""
     general_all_no: int = 0
     writer: str = ""
     general_firstup: str = ""
     keyword: str = ""
     story: str = ""
-    biggenre: int = 0 
+    biggenre: int = 0
     genre: int = 0
     general_lastup: str = ""
 
 
 class NarouData:
-    """なろうの小説APIから取得したデータを整形するクラス。"""
+    """なろうの小説APIから取得したデータを整形するクラス."""
 
     def __init__(self, response: Response):
+        """NarouDataクラスのコンストラクタ.
+
+        引数:
+            response (Response): なろうAPIからのレスポンス。
+
+        処理:
+            レスポンスから必要なデータを抽出し、CountとNovelDataのインスタンスを生成する。
+            エラーが発生した場合はメッセージを表示し、属性をNoneに設定する。
+        """
         self.count: Optional[Count] = None
         self.novel_data: Optional[NovelData] = None
 

@@ -18,14 +18,16 @@
 | `POSTGRES_PORT`   | Postgresのポート番号    | `5432`                  |
 | `JWT_SECRET_KEY`  | JWTの秘密鍵             | `8ae240d39...376193c6`  |
 
-### コンテナの操作
+### Makefile
+
 |コマンド|内容|
 |-----|-----|
 |make build	|Dockerイメージの作成。開発用のdocker-compose.ymlを指定してビルドを行います。|
-|make up	|コンテナを起動。このコマンドはdocker-compose upコマンドをラップしており、プロジェクトに必要なサービスコンテナを起動します。|
-|make down	|コンテナを停止。これはdocker-compose downコマンドのラッパーで、起動しているコンテナを停止し、ネットワークを削除します。|
-|poetry run alembic revision --autogenerate	|マイグレーションファイルを自動生成。モデルに対して行われた変更を元に新しいマイグレーションファイルを作成します。|
-|poetry run alembic upgrade head|	データベースに最新のマイグレーションを適用。データベースを最新のスキーマに更新します。|
+|make up |コンテナを起動。このコマンドはdocker-compose upコマンドをラップしており、プロジェクトに必要なサービスコンテナを起動します。|
+|make down |コンテナを停止。これはdocker-compose downコマンドのラッパーで、起動しているコンテナを停止し、ネットワークを削除します。|
+| make migration |マイグレーションファイルを自動生成。モデルに対して行われた変更を元に新しいマイグレーションファイルを作成します。|
+| make upgrade | データベースに最新のマイグレーションを適用。データベースを最新のスキーマに更新します。|
+| make fixtures | fixtures.jsonの中身をDBに登録<br>※DBの中身を初期化してから実施すること |
 
 ### 動作確認
 URL: http://localhost:8000

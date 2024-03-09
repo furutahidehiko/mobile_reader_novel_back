@@ -1,0 +1,27 @@
+[
+    {
+        "model": "Book",
+        "file": "book",
+        "fields": {
+            "id": 1,
+            "ncode": "xxxxxx"
+        }
+    },
+    {
+        "model": "Book",
+        "file": "book",
+        "fields": {
+            "id": 2,
+            "ncode": "yyyyyy"
+        }
+    },
+    {
+        "model": "ReadHistory",
+        "file": "read_history",
+        "fields": {
+            "id": 1,
+            "book_id": 1,
+            "read_episode": 1
+        }
+    }
+]
