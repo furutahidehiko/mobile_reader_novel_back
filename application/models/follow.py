@@ -1,4 +1,4 @@
-"""このモジュールは、ユーザーのお気に入り（フォロー）情報を表すためのデータベースモデルを提供します。."""
+"""このモジュールは、ユーザーのお気に入り（フォロー）情報を表すためのデータベースモデルを提供します."""
 from sqlalchemy import Column, ForeignKey, Integer
 
 from models.base import Base

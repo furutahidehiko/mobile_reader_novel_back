@@ -37,7 +37,7 @@ async def main_text(
     tags=["目次画面"],
 )
 async def novel_info(ncode: str, db: AsyncSession = Depends(get_async_session)):
-    """小説情報取得APIのエンドポイント。."""
+    """小説情報取得APIのエンドポイント."""
     return await get_novel_info(db, ncode)
 
 
@@ -51,7 +51,7 @@ async def novel_info(ncode: str, db: AsyncSession = Depends(get_async_session)):
 async def post_follow_router(
     ncode: str, db: AsyncSession = Depends(get_async_session)
 ):
-    """お気に入り登録APIのエンドポイント。."""
+    """お気に入り登録APIのエンドポイント."""
     return await post_follow(db, ncode)
 
 
@@ -65,5 +65,5 @@ async def post_follow_router(
 async def delete_follow_router(
     ncode: str, db: AsyncSession = Depends(get_async_session)
 ):
-    """お気に入り削除APIのエンドポイント。."""
+    """お気に入り削除APIのエンドポイント."""
     return await delete_follow(db, ncode)

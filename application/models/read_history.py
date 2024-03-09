@@ -1,4 +1,4 @@
-"""このモジュールは、ユーザーの既読情報を表すためのデータベースモデルを提供します。."""
+"""このモジュールは、ユーザーの既読情報を表すためのデータベースモデルを提供します."""
 from sqlalchemy import Column, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -6,7 +6,7 @@ from models.base import Base
 
 
 class ReadHistory(Base):
-    """既読テーブルのORM。."""
+    """既読テーブルのORM."""
 
     __tablename__ = "read_history"
     __table_args__ = (UniqueConstraint("book_id", "read_episode"),)

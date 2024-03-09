@@ -1,4 +1,4 @@
-"""このモジュールは、小説家になろうのAPIおよびウェブサイトから小説情報を取得し、整形して返すための機能を提供します。."""
+"""このモジュールは、小説家になろうのAPIおよびウェブサイトから小説情報を取得し、整形して返すための機能を提供します."""
 from bs4 import BeautifulSoup
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ from schemas.novel import NovelInfoResponse
 
 
 def scrape_narou_chapters(ncode: str, total_episodes: int) -> list:
-    """指定されたncodeの小説の目次情報をスクレイピングで取得する関数。.
+    """指定されたncodeの小説の目次情報をスクレイピングで取得する関数.
 
     Parameters:
     - ncode (str): スクレイピング対象の小説のNコード。
@@ -87,7 +87,7 @@ def scrape_narou_chapters(ncode: str, total_episodes: int) -> list:
 
 
 async def get_novel_info(db: AsyncSession, ncode: str):
-    """指定されたncodeに基づいて小説の情報を取得し、それをレスポンスモデルに設定する関数。.
+    """指定されたncodeに基づいて小説の情報を取得し、それをレスポンスモデルに設定する関数.
 
     Parameters:
     - db (AsyncSession): 非同期SQLAlchemyセッション。データベースとの非同期通信。

@@ -3,7 +3,7 @@ from enum import Enum
 
 
 class BigGenre(Enum):
-    """書籍やストーリーの大まかなジャンルを表すEnumクラス。.
+    """書籍やストーリーの大まかなジャンルを表すEnumクラス.
 
     各メンバーは、ジャンルのIDとラベルをタプルで持っています。
     """
@@ -18,17 +18,17 @@ class BigGenre(Enum):
 
     @property
     def id(self):
-        """ジャンルのIDを取得するプロパティです。."""
+        """ジャンルのIDを取得するプロパティです."""
         return self.value[0]
 
     @property
     def label(self):
-        """ジャンルのラベルを取得するプロパティです。."""
+        """ジャンルのラベルを取得するプロパティです."""
         return self.value[1]
 
     @classmethod
     def get_label_by_id(cls, id):
-        """指定されたIDに対応するジャンルのラベルを返すクラスメソッドです。.
+        """指定されたIDに対応するジャンルのラベルを返すクラスメソッドです.
 
         引数:
             id (int): ジャンルのID
@@ -43,7 +43,7 @@ class BigGenre(Enum):
 
 
 class Genre(Enum):
-    """書籍やストーリーのより詳細なジャンルを表すEnumクラス。.
+    """書籍やストーリーのより詳細なジャンルを表すEnumクラス.
 
     各メンバーは、ジャンルのIDとラベルをタプルで持っています。
     """
@@ -79,17 +79,17 @@ class Genre(Enum):
 
     @property
     def id(self):
-        """ジャンルのIDを取得するプロパティです。."""
+        """ジャンルのIDを取得するプロパティです."""
         return self.value[0]
 
     @property
     def label(self):
-        """ジャンルのラベルを取得するプロパティです。."""
+        """ジャンルのラベルを取得するプロパティです."""
         return self.value[1]
 
     @classmethod
     def get_label_by_id(cls, id):
-        """指定されたIDに対応するジャンルのラベルを返すクラスメソッドです。.
+        """指定されたIDに対応するジャンルのラベルを返すクラスメソッドです.
 
         引数:
             id (int): ジャンルのID

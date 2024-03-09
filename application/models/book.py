@@ -1,4 +1,4 @@
-"""このモジュールでは、小説情報を表現するためのデータベースモデルを提供します。."""
+"""このモジュールでは、小説情報を表現するためのデータベースモデルを提供します."""
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship

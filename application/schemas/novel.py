@@ -91,7 +91,7 @@ class NovelInfoResponse(BaseModel):
     is_follow: bool = Field(..., title="お気に入り登録してるかどうか")
 
     class Config:
-        """Pydanticモデルの設定クラス。.
+        """Pydanticモデルの設定クラス.
 
         json_schema_extra: スキーマの例を定義します。
                         この例はAPIのドキュメントで使用され、

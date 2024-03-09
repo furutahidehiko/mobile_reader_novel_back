@@ -1,4 +1,4 @@
-"""このモジュールは、小説家になろうAPIから取得したデータを扱うためのクラスとデータ構造を定義しています。."""
+"""このモジュールは、小説家になろうAPIから取得したデータを扱うためのクラスとデータ構造を定義しています."""
 
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
@@ -29,10 +29,10 @@ class NovelData:
 
 
 class NarouData:
-    """なろうの小説APIから取得したデータを整形するクラス。."""
+    """なろうの小説APIから取得したデータを整形するクラス."""
 
     def __init__(self, response: Response):
-        """NarouDataクラスのコンストラクタ。.
+        """NarouDataクラスのコンストラクタ.
 
         引数:
             response (Response): なろうAPIからのレスポンス。

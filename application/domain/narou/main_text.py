@@ -17,7 +17,7 @@ async def get_main_text(
     episode: int,
     db: AsyncSession = Depends(get_async_session),
 ) -> dict:
-    """指定されたncode(小説コード)とepisode(話数)の小説本文をスクレイピングで取得する関数。.
+    """指定されたncode(小説コード)とepisode(話数)の小説本文をスクレイピングで取得する関数.
 
     Parameters:
     - ncode (str): スクレイピング対象の小説のNコード。
