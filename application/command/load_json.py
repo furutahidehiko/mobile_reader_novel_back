@@ -62,7 +62,6 @@ async def run(args):
         for data in json.load(f):
             module = import_module(f"models.{data['file']}")
             model = getattr(module, data["model"])
-            print(model)
             stmt = insert(model).values(**data["fields"])
             await db.execute(stmt)
     await db.commit()
