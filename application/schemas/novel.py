@@ -44,6 +44,7 @@ class NovelResponse(BaseModel):
         }
     }
 
+
 class Chapter(BaseModel):
     """目次情報.
 
@@ -52,8 +53,10 @@ class Chapter(BaseModel):
     chapter_title : 章題
     sub_titles : 小説のサブタイトル
     """
+
     chapter_title: str = Field(..., title="章題")
     sub_titles: List[str] = Field(..., title="小説のサブタイトル")
+
 
 class NovelInfoResponse(BaseModel):
     """小説情報.
@@ -73,6 +76,7 @@ class NovelInfoResponse(BaseModel):
     chapters : 章
     is_follow : お気に入り登録してるかどうか
     """
+
     title: str = Field(..., title="小説名")
     author: str = Field(..., title="作者名")
     episode_count: int = Field(..., title="全話数")
@@ -87,6 +91,13 @@ class NovelInfoResponse(BaseModel):
     is_follow: bool = Field(..., title="お気に入り登録してるかどうか")
 
     class Config:
+        """Pydanticモデルの設定クラス.
+
+        json_schema_extra: スキーマの例を定義します。
+                        この例はAPIのドキュメントで使用され、
+                        APIの使用方法を理解しやすくするために役立ちます。
+        """
+
         json_schema_extra = {
             "example": {
                 "title": "異世界冒険記",
@@ -102,9 +113,9 @@ class NovelInfoResponse(BaseModel):
                 "chapters": [
                     {
                         "chapter_title": "序章",
-                        "sub_titles": ["第一話：異世界への扉", "第二話：新たなる出会い"]
+                        "sub_titles": ["第一話：異世界への扉", "第二話：新たなる出会い"],
                     }
                 ],
-                "is_follow": True
+                "is_follow": True,
             }
         }
