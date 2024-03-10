@@ -1,6 +1,5 @@
 """ルーター用モジュール."""
 
-from schemas.user import AuthUserModel, AuthUserResponse
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +10,7 @@ from domain.narou.novel_info import get_novel_info
 from domain.user.token import auth_token
 from schemas.follow import FollowResponse
 from schemas.novel import NovelInfoResponse, NovelResponse
-
+from schemas.user import AuthUserModel, AuthUserResponse
 
 router = APIRouter()
 
@@ -72,16 +71,18 @@ async def delete_follow_router(
     """お気に入り削除APIのエンドポイント."""
     return await delete_follow(db, ncode)
 
+
 @router.post(
     "/token/",
     response_model=AuthUserResponse,
     status_code=status.HTTP_200_OK,
-    summary="トークン認証API",
+    summary="ログイン認証・トークン生成API",
     description="ID/パスワードorリフレッシュトークンによる認証を行い新たなアクセストークンとリフレッシュトークンを発行します。",
     tags=["token"],
 )
-async def auth_token(
+async def auth_token_router(
     auth_data: AuthUserModel,
     async_session: AsyncSession = Depends(get_async_session),
 ):
-    return await auth_token(auth_data=auth_data,async_session=async_session)
+    """ログイン認証・トークン生成APIのエンドポイント."""
+    return await auth_token(auth_data=auth_data, async_session=async_session)

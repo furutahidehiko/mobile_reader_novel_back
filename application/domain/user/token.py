@@ -1,22 +1,31 @@
-
+"""このモジュールは、トークン認証の機能を提供します."""
 from datetime import datetime, timedelta
 from typing import Optional
-from models.user import User
-from config.config import get_async_session
-from config.environment import jwt_settings
+
 from fastapi import Depends, HTTPException, status
 from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
+from config.config import get_async_session
+from config.environment import jwt_settings
+from models.user import User
 from schemas.user import AuthUserModel, AuthUserResponse
-from sqlalchemy.future import select
 
 
 async def auth_token(
     auth_data: AuthUserModel,
     async_session: AsyncSession = Depends(get_async_session),
 ) -> AuthUserResponse:
-    """トークン認証API."""
+    """ログイン認証を行い、アクセストークン及びリフレッシュトークンを生成する関数.
+
+    Parameters:
+    - auth_data (AuthUserModel): 認証するためユーザー情報。
+    - async_session (AsyncSession): DBとのセッション。
+
+    Returns:
+    - AuthUserResponse: アクセストークン及びリフレッシュトークン。
+    """
 
     def authenticate_user(user: Optional[User]):
         if user is None:
@@ -46,4 +55,6 @@ async def auth_token(
         jwt_settings.JWT_SECRET_KEY,
         algorithm=jwt_settings.JWT_ALGORITHM,
     )
-    return AuthUserResponse(access_token=access_token, refresh_token=refresh_token )
+    return AuthUserResponse(
+        access_token=access_token, refresh_token=refresh_token
+    )

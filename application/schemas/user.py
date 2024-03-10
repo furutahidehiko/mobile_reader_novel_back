@@ -1,15 +1,23 @@
 """ユーザ関連のスキーマ用モジュール."""
 
 from enum import Enum
+
 from pydantic import BaseModel, Field
 
-class GrantType(str,Enum):
+
+class GrantType(str, Enum):
+    """認証に使う情報の種類を表すEnumクラス.
+
+    - PASSWORD: ID・passwordによる認証を行うという意味
+    - REFRESH_TOKEN: refresh_tokenによる認証を行うという意味
+    """
+
     PASSWORD: str = "password"
     REFRESH_TOKEN: str = "refresh_token"
 
 
 class AuthUserModel(BaseModel):
-    """認証API用のモデル."""
+    """トークンAPIで使用するバリデーションモデル."""
 
     id: str | None = Field(
         ...,
@@ -21,7 +29,10 @@ class AuthUserModel(BaseModel):
         ..., title="パスワード", description="パスワード", example="password"
     )
     refresh_token: str | None = Field(
-        ..., title="リフレッシュトークン", description="リフレッシュトークン", example="sdhjjhjhsasfak"
+        ...,
+        title="リフレッシュトークン",
+        description="リフレッシュトークン",
+        example="sdhjjhjhsasfak",
     )
     grant_type: GrantType = Field(
         ..., title="認証方式", description="認証方式", example="password"
@@ -29,7 +40,7 @@ class AuthUserModel(BaseModel):
 
 
 class AuthUserResponse(BaseModel):
-    """認証API用のレスポンス."""
+    """トークンAPIのレスポンス用モデル."""
 
     access_token: str = Field(
         title="アクセストークン",

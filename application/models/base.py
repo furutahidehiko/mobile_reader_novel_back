@@ -5,10 +5,10 @@
 これにより、他のデータベースモデルクラスはこの基底クラスを継承して、
 非同期操作を含むデータベースの操作が可能になります。
 """
+from passlib.context import CryptContext
+from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String
-from passlib.context import CryptContext
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -17,6 +17,7 @@ class Base(AsyncAttrs, DeclarativeBase):
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True, comment="ID"
     )
+
 
 class PasswordMixin:
     """ハッシュ化したパスワードを設定する用のMixin."""
