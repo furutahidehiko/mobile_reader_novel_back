@@ -49,7 +49,7 @@ class JWTSettings(BaseSettings):
     """トークンの有効期限(分)"""
 
     JWT_REFRESH_TOKEN_EXPIRE_MINUTES: int = 90
-    """トークンの有効期限(分)"""
+    """トークンの有効期限(日)"""
 
 
 settings = VariableSettings()
