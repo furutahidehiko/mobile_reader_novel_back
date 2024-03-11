@@ -23,5 +23,13 @@
             "book_id": 1,
             "read_episode": 1
         }
+    },
+    {
+        "model": "User",
+        "file": "user",
+        "fields": {
+            "id": 1,
+            "password": "$2b$12$kG6LvWTlDbuhRUcMJ7tdBun3UtoHepG1yXzKjbVgXe4LVLvUoeFFC"
+        }
     }
 ]

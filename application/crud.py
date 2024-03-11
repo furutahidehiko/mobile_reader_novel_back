@@ -97,3 +97,15 @@ async def check_follow_exists_by_book_id(
     if follow_existence_result.scalars().first() is None:
         return False
     return True
+
+
+# async def create_user(
+#     async_session: AsyncSession, customer_model: CustomerModel
+# ) -> Customer:
+#     """ユーザを生成."""
+#     customer = Customer(name=customer_model.name)
+#     customer.set_password(customer_model.password)
+#     async_session.add(customer)
+#     await async_session.commit()
+#     await async_session.refresh(customer)
+#     return customer

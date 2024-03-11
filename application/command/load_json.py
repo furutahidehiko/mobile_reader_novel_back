@@ -10,7 +10,7 @@ from pathlib import Path
 
 from sqlalchemy.dialects.postgresql import insert
 
-from config.config import get_async_session
+from config.config import SessionFactory
 
 
 def create_file_path(args):
@@ -55,13 +55,15 @@ async def run(args):
     if file_path is None:
         return
 
-    db = await get_async_session().__anext__()
-    print(db)
-
-    with open(file_path) as f:
-        for data in json.load(f):
-            module = import_module(f"models.{data['file']}")
-            model = getattr(module, data["model"])
-            stmt = insert(model).values(**data["fields"])
-            await db.execute(stmt)
-    await db.commit()
+    async_session = SessionFactory.create()
+    db = async_session()
+    try:
+        with open(file_path) as f:
+            for data in json.load(f):
+                module = import_module(f"models.{data['file']}")
+                model = getattr(module, data["model"])
+                stmt = insert(model).values(**data["fields"])
+                await db.execute(stmt)
+            await db.commit()
+    finally:
+        await db.close()

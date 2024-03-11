@@ -19,7 +19,7 @@ class GrantType(str, Enum):
 class AuthUserModel(BaseModel):
     """トークンAPIで使用するバリデーションモデル."""
 
-    id: str | None = Field(
+    id: int | None = Field(
         ...,
         title="ID",
         description="ID",
