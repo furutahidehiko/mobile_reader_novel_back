@@ -1,17 +1,17 @@
 """ルーター用モジュール."""
 
-from models.user import User
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.config import get_async_session
 from domain.narou.follow import delete_follow, post_follow
 from domain.narou.main_text import get_main_text
 from domain.narou.novel_info import get_novel_info
-from domain.user.token import auth_token
+from domain.user.check_token import check_token
+from domain.user.check_password import check_password
 from schemas.follow import FollowResponse
 from schemas.novel import NovelInfoResponse, NovelResponse
-from schemas.user import AuthUserModel, AuthUserResponse
+from schemas.user import AuthUserModel, AuthUserResponse, GrantType
 
 router = APIRouter()
 
@@ -86,4 +86,13 @@ async def auth_token_router(
     async_session: AsyncSession = Depends(get_async_session),
 ):
     """ログイン認証・トークン生成APIのエンドポイント."""
-    return await auth_token(auth_data=auth_data, async_session=async_session)
+    # grant_typeで呼ぶ関数を分ける passwordの場合はauth_password/トークンの場合はauth_token
+    if auth_data.grant_type == GrantType.PASSWORD.value:
+        return await check_password(auth_data=auth_data, async_session=async_session)
+    elif auth_data.grant_type == GrantType.REFRESH_TOKEN.value:
+        return await check_token(auth_data=auth_data)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR ,
+            detail="Internal Server Error",
+        )

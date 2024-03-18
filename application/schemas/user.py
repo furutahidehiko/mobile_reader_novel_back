@@ -15,11 +15,10 @@ class GrantType(str, Enum):
     PASSWORD: str = "password"
     REFRESH_TOKEN: str = "refresh_token"
 
-
 class AuthUserModel(BaseModel):
     """トークンAPIで使用するバリデーションモデル."""
 
-    id: int | None = Field(
+    id: str | None = Field(
         ...,
         title="ID",
         description="ID",
@@ -34,7 +33,7 @@ class AuthUserModel(BaseModel):
         description="リフレッシュトークン",
         example="sdhjjhjhsasfak",
     )
-    grant_type: GrantType = Field(
+    grant_type: str = Field(
         ..., title="認証方式", description="認証方式", example="password"
     )
 
