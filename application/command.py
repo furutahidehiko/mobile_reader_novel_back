@@ -14,7 +14,7 @@
 import asyncio
 import sys
 
-from command import load_json
+from command import create_signature, load_json
 
 if __name__ == "__main__":
     args = sys.argv
@@ -22,3 +22,5 @@ if __name__ == "__main__":
         print("実行するコマンドを指定してください", file=sys.stderr)
     if args[1] == "load_json":
         asyncio.run(load_json.run(args))
+    elif args[1] == "create_signature":
+        create_signature.run()

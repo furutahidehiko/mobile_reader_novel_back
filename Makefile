@@ -43,3 +43,6 @@ upgrade:
 
 fixtures:
 	$(POETRY_RUN) python command.py load_json fixtures.json
+
+signature:
+	$(POETRY_RUN) python command.py create_signature

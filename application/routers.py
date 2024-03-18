@@ -23,7 +23,7 @@ async def main_text(
     *,
     ncode: str,
     episode: int,
-    async_session: AsyncSession = Depends(get_async_session),
+    async_session: AsyncSession = Depends(get_async_session)
 ):
     """小説取得APIのエンドポイント."""
     return await get_main_text(ncode, episode, async_session)

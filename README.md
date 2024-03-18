@@ -17,6 +17,7 @@
 | `POSTGRES_HOST`   | Postgresのホスト名     | `db`                    |
 | `POSTGRES_PORT`   | Postgresのポート番号    | `5432`                  |
 | `JWT_SECRET_KEY`  | JWTの秘密鍵             | `8ae240d39...376193c6`  |
+| `API_KEY` | APIのキー（複数設定する必要が出てきた場合はDBから取得するように変更すること）| `1f765fc8-05b2-b4a4-b290-0416ede7e712` |
 
 ### Makefile
 
@@ -28,6 +29,7 @@
 | make migration |マイグレーションファイルを自動生成。モデルに対して行われた変更を元に新しいマイグレーションファイルを作成します。|
 | make upgrade | データベースに最新のマイグレーションを適用。データベースを最新のスキーマに更新します。|
 | make fixtures | fixtures.jsonの中身をDBに登録<br>※DBの中身を初期化してから実施すること |
+| make signature | APIにアクセスするための署名を表示 |
 
 ### 動作確認
 URL: http://localhost:8000

@@ -13,6 +13,10 @@ class VariableSettings(BaseSettings):
 
     TRUSTED_ORIGINS: List[str] = ["http://localhost:3000"]
     """CORSで許可するオリジン"""
+
+    API_KEY: str
+    """APIキー（複数対応する場合は環境変数ではなくDBから取得する方法に変更すること）"""
+
     # CSRF_COOKIE_DOMAIN: str = ""
     """CSRFCookieを設定するときに使用されるドメイン"""
 
