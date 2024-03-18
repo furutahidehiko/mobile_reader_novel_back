@@ -1,5 +1,5 @@
 """このモジュールは、トークン認証の機能を提供します."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt
 
 from config.environment import jwt_settings
@@ -21,16 +21,16 @@ async def create_token(
     
     min = timedelta(minutes=jwt_settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     month = timedelta(days=jwt_settings.JWT_REFRESH_TOKEN_EXPIRE_MINUTES)
-    expire = datetime.utcnow() + min
-    refresh_expire = datetime.utcnow() + month
+    expire = datetime.now(timezone.utc) + min
+    refresh_expire = datetime.now(timezone.utc) + month
     access_token = jwt.encode(
         {"sub": str(user_id), "exp": expire},
-        jwt_settings.JWT_SECRET_KEY,
+        jwt_settings.JWT_SECRET_ACCESS_KEY,
         algorithm=jwt_settings.JWT_ALGORITHM,
     )
     refresh_token = jwt.encode(
         {"sub": str(user_id), "exp": refresh_expire},
-        jwt_settings.JWT_SECRET_KEY,
+        jwt_settings.JWT_SECRET_REFRESH_KEY,
         algorithm=jwt_settings.JWT_ALGORITHM,
     )
     return AuthUserResponse(

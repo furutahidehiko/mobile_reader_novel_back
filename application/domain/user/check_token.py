@@ -31,7 +31,7 @@ async def check_token(
     try:
         payload = jwt.decode(
             auth_data.refresh_token,
-            jwt_settings.JWT_SECRET_KEY,
+            jwt_settings.JWT_SECRET_REFRESH_KEY,
             algorithms=jwt_settings.JWT_ALGORITHM,
         )
         user_id = payload.get("sub")

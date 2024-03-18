@@ -35,21 +35,28 @@ class PostgresSettings(BaseSettings):
 class JWTSettings(BaseSettings):
     """JWT関連の設定クラス."""
 
-    JWT_SECRET_KEY: str
+    JWT_SECRET_ACCESS_KEY: str
     """シークレットキー
 
     下記コマンドで生成可能
     $ openssl rand -hex 32
     """
 
+    JWT_SECRET_REFRESH_KEY: str
+    """シークレットキー(リフレッシュトークン用)
+
+    下記コマンドで生成可能
+    $ openssl rand -hex 64
+    """
+
     JWT_ALGORITHM: str = "HS256"
     """JWTトークンの署名に使用するアルゴリズム"""
 
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    """トークンの有効期限(分)"""
+    """アクセストークンの有効期限(分)"""
 
     JWT_REFRESH_TOKEN_EXPIRE_MINUTES: int = 90
-    """トークンの有効期限(日)"""
+    """リフレッシュトークンの有効期限(日)"""
 
 
 settings = VariableSettings()

@@ -16,7 +16,8 @@
 | `POSTGRES_PASSWORD` | Postgresのパスワード    | `postgres`              |
 | `POSTGRES_HOST`   | Postgresのホスト名     | `db`                    |
 | `POSTGRES_PORT`   | Postgresのポート番号    | `5432`                  |
-| `JWT_SECRET_KEY`  | JWTの秘密鍵             | `8ae240d39...376193c6`  |
+| `JWT_SECRET_ACCESS_KEY`  | JWTの秘密鍵(アクセストークン)   | `8ae240d39...376193c6`  |
+| `JWT_SECRET_REFRESH_KEY`  | JWTの秘密鍵(リフレッシュトークン)  | `1608144..afdbd`  |
 
 ### Makefile
 
