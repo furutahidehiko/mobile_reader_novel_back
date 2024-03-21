@@ -1,4 +1,5 @@
 """このスクリプトは、データベース操作に関連する複数の非同期関数を含んでいます."""
+
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +8,7 @@ from sqlalchemy.future import select
 from models.book import Book
 from models.follow import Follow
 from models.read_history import ReadHistory
+from models.user import User
 
 
 async def ensure_book_exists(db: AsyncSession, ncode: str) -> int:
@@ -97,3 +99,15 @@ async def check_follow_exists_by_book_id(
     if follow_existence_result.scalars().first() is None:
         return False
     return True
+
+
+async def get_user(db: AsyncSession, user_id: str) -> User:
+    """指定されたuser_id(メールアドレス)に紐づくユーザー情報を返す関数."""
+    print(user_id)
+    result = await db.execute(
+        select(User).where(User.email == user_id),
+    )
+
+    user: User = result.scalar_one_or_none()
+
+    return user

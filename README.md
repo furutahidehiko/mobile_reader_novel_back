@@ -31,10 +31,10 @@
 | make fixtures | fixtures.jsonの中身をDBに登録<br>※DBの中身を初期化してから実施すること |
 
 ### Fixture
-## テストアカウント
-|id|パスワード|
-|-----|-----|
-| 1 | pass |
+#### テストアカウント
+|id| email | パスワード |
+|-----|-----|-----|
+| 1 | test01@example.com | pass |
 
 ### 動作確認
 URL: http://localhost:8000

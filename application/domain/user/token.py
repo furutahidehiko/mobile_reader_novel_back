@@ -1,15 +1,14 @@
 """このモジュールは、トークン認証の機能を提供します."""
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
 from jose import jwt
 
 from config.environment import jwt_settings
 from schemas.user import AuthUserResponse
 
 
-
-async def create_token(
-        user_id: int
-) -> AuthUserResponse:
+async def create_token(user_id: str) -> AuthUserResponse:
     """アクセストークン及びリフレッシュトークンを生成する関数.
 
     Parameters:
@@ -18,11 +17,10 @@ async def create_token(
     Returns:
     - AuthUserResponse: アクセストークン及びリフレッシュトークン。
     """
-    
     min = timedelta(minutes=jwt_settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     month = timedelta(days=jwt_settings.JWT_REFRESH_TOKEN_EXPIRE_MINUTES)
-    expire = datetime.now(timezone.utc) + min
-    refresh_expire = datetime.now(timezone.utc) + month
+    expire = datetime.now(ZoneInfo("Asia/Tokyo")) + min
+    refresh_expire = datetime.now(ZoneInfo("Asia/Tokyo")) + month
     access_token = jwt.encode(
         {"sub": str(user_id), "exp": expire},
         jwt_settings.JWT_SECRET_ACCESS_KEY,

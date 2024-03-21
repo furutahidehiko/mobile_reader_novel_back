@@ -29,6 +29,7 @@
         "file": "user",
         "fields": {
             "id": 1,
+            "email": "test01@example.com",
             "password": "$2b$12$kG6LvWTlDbuhRUcMJ7tdBun3UtoHepG1yXzKjbVgXe4LVLvUoeFFC"
         }
     }
