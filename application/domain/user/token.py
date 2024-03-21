@@ -17,9 +17,9 @@ async def create_token(user_id: str) -> AuthUserResponse:
     Returns:
     - AuthUserResponse: アクセストークン及びリフレッシュトークン。
     """
-    min = timedelta(minutes=jwt_settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    hours = timedelta(hours=jwt_settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     month = timedelta(days=jwt_settings.JWT_REFRESH_TOKEN_EXPIRE_MINUTES)
-    expire = datetime.now(ZoneInfo("Asia/Tokyo")) + min
+    expire = datetime.now(ZoneInfo("Asia/Tokyo")) + hours
     refresh_expire = datetime.now(ZoneInfo("Asia/Tokyo")) + month
     access_token = jwt.encode(
         {"sub": str(user_id), "exp": expire},

@@ -100,5 +100,8 @@ async def auth_token_router(
         case _:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                error_description="grant_typeが不明です.",
+                detail={
+                    "error": "invalid_grant_type",
+                    "error_description": "grant_typeが不明です",
+                },
             )

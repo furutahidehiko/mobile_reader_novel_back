@@ -52,7 +52,7 @@ class JWTSettings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     """JWTトークンの署名に使用するアルゴリズム"""
 
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 9
     """アクセストークンの有効期限(分)"""
 
     JWT_REFRESH_TOKEN_EXPIRE_MINUTES: int = 90
