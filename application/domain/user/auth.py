@@ -13,7 +13,7 @@ from schemas.user import AuthUserResponse
 
 
 async def auth_password(
-    user_id: str,
+    email: str,
     password: str,
     async_session: AsyncSession,
 ) -> AuthUserResponse:
@@ -32,14 +32,14 @@ async def auth_password(
             return False
         return user.check_password(password)
 
-    user = await get_user(async_session, user_id)
+    user = await get_user(async_session, email)
 
     if not authenticate_user(user):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "error": "bad_request",
-                "error_description": "idかpasswordが異なります",
+                "error_description": "メールアドレスかpasswordが異なります",
             },
         )
 
@@ -79,4 +79,4 @@ async def auth_token(refresh_token: str) -> AuthUserResponse:
             },
         )
 
-    return await create_token(user_id)
+    return await create_token(str(user_id))

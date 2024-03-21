@@ -53,7 +53,7 @@ class JWTSettings(BaseSettings):
     """JWTトークンの署名に使用するアルゴリズム"""
 
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 9
-    """アクセストークンの有効期限(分)"""
+    """アクセストークンの有効期限(時間)"""
 
     JWT_REFRESH_TOKEN_EXPIRE_MINUTES: int = 90
     """リフレッシュトークンの有効期限(日)"""

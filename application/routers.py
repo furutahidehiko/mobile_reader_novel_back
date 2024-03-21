@@ -91,7 +91,7 @@ async def auth_token_router(
     match auth_data.grant_type:
         case GrantType.PASSWORD.value:
             return await auth_password(
-                user_id=auth_data.user_id,
+                email=auth_data.user_id,
                 password=auth_data.password,
                 async_session=async_session,
             )

@@ -101,11 +101,11 @@ async def check_follow_exists_by_book_id(
     return True
 
 
-async def get_user(db: AsyncSession, user_id: str) -> User:
-    """指定されたuser_id(メールアドレス)に紐づくユーザー情報を返す関数."""
-    print(user_id)
+async def get_user(db: AsyncSession, email: str) -> User:
+    """指定されたメールアドレスに紐づくユーザー情報を返す関数."""
+    
     result = await db.execute(
-        select(User).where(User.email == user_id),
+        select(User).where(User.email == email),
     )
 
     user: User = result.scalar_one_or_none()
