@@ -8,7 +8,6 @@ from domain.narou.follow import delete_follow, post_follow
 from domain.narou.main_text import get_main_text
 from domain.narou.novel_info import get_novel_info
 from domain.user.auth import auth_password, auth_token
-
 from schemas.follow import FollowResponse
 from schemas.novel import NovelInfoResponse, NovelResponse
 from schemas.user import AuthUserModel, AuthUserResponse, GrantType
