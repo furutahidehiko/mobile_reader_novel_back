@@ -5,7 +5,7 @@
 これにより、他のデータベースモデルクラスはこの基底クラスを継承して、
 非同期操作を含むデータベースの操作が可能になります。
 """
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -24,12 +24,14 @@ class PasswordMixin:
 
     _password: Mapped[str] = mapped_column("password", String(60))
 
-    _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
     def set_password(self, password):
         """パスワードをハッシュ化して設定."""
-        self._password = PasswordMixin._pwd_context.hash(password)
+        pwd_bytes = password.encode("utf-8")
+        salt = bcrypt.gensalt()
+        self._password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
 
     def check_password(self, password):
         """設定したパスワードと一致するかどうかを検証."""
-        return PasswordMixin._pwd_context.verify(password, self._password)
+        input_password_hash = password.encode("utf-8")
+        hashed_password = self._password.encode("utf-8")
+        return bcrypt.checkpw(input_password_hash, hashed_password)
