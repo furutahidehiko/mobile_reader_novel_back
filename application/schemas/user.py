@@ -4,7 +4,6 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-
 class GrantType(str, Enum):
     """認証に使う情報の種類を表すEnumクラス.
 
@@ -52,3 +51,31 @@ class AuthUserResponse(BaseModel):
         description="リフレッシュトークン",
         example="dsfhgfsfa,.fklsijashkhiafeyehjoszxcsa/j;w",
     )
+
+class UserModel(BaseModel):
+    """ユーザーモデル."""
+
+    email: str = Field(
+        ...,
+        title="メールアドレス",
+        description="メールアドレス）",
+        example="test@gmail.com",
+    )
+    password: str = Field(
+        ..., title="パスワード", description="パスワード", example="password"
+    )
+
+class UserResponse(BaseModel):
+    """アカウント情報を返却するレスポンス."""
+
+    id: str = Field(
+        title="ID",
+        description="ID",
+        example="01",
+    )
+    password:str = Field(
+        title="password",
+        description="password",
+        example="01HC7GYK12X4S8J3FHD6K3JV0V",
+    )
+    email: str = Field(title="メールアドレス", description="メールアドレス", example="test@gmail.com")

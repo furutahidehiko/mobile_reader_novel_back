@@ -22,13 +22,13 @@ class Base(AsyncAttrs, DeclarativeBase):
 class PasswordMixin:
     """ハッシュ化したパスワードを設定する用のMixin."""
 
-    _password: Mapped[str] = mapped_column("password", String(60))
+    _password: Mapped[str] = mapped_column("password", String(128))
 
     def set_password(self, password):
         """パスワードをハッシュ化して設定."""
         pwd_bytes = password.encode("utf-8")
         salt = bcrypt.gensalt()
-        self._password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
+        self._password = bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
     def check_password(self, password):
         """設定したパスワードと一致するかどうかを検証."""

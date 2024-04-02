@@ -1,5 +1,6 @@
 """ルーター用モジュール."""
 
+from crud import create_user
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +11,7 @@ from domain.narou.novel_info import get_novel_info
 from domain.user.auth import auth_password, auth_token
 from schemas.follow import FollowResponse
 from schemas.novel import NovelInfoResponse, NovelResponse
-from schemas.user import AuthUserModel, AuthUserResponse, GrantType
+from schemas.user import AuthUserModel, AuthUserResponse, GrantType, UserModel, UserResponse
 
 router = APIRouter()
 
@@ -102,3 +103,19 @@ async def auth_token_router(
                     "error_description": "grant_typeが不明です",
                 },
             )
+
+
+@router.post(
+    "/user/",
+    tags=["user"],
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="ユーザー作成API",
+)
+async def user(
+    user: UserModel,
+    async_session: AsyncSession = Depends(get_async_session),
+):
+    """アカウント生成用API."""
+    user = await create_user(async_session, user)
+    return UserResponse(id=str(user.id), password=user._password, email=user.email)

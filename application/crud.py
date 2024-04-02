@@ -1,5 +1,6 @@
 """このスクリプトは、データベース操作に関連する複数の非同期関数を含んでいます."""
 
+from schemas.user import UserModel
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -109,4 +110,16 @@ async def get_user(db: AsyncSession, email: str) -> User:
 
     user: User = result.scalar_one_or_none()
 
+    return user
+
+
+async def create_user(
+    db: AsyncSession, user_model: UserModel
+) -> User:
+    """顧客を生成."""
+    user = User(email=user_model.email)
+    user.set_password(user_model.password)
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
     return user
